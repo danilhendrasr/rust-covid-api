@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
                     .service(daily::specific_date),
             )
     })
-    .bind("127.0.0.1:8081")?
+    .bind("0.0.0.0:8081")?
     .run()
     .await
 }
