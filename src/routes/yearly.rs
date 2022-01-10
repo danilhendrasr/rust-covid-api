@@ -22,8 +22,37 @@ struct ResponseStructure {
   active: i32,
 }
 
+#[derive(Deserialize)]
+pub struct IndexQueryParams {
+  since: Option<String>,
+  upto: Option<String>,
+}
+
 #[get("")]
-pub async fn index() -> HttpResponse {
+pub async fn index(params: web::Query<IndexQueryParams>) -> HttpResponse {
+  let parsed_since_param = params
+    .since
+    .clone()
+    .unwrap_or(String::from("0"))
+    .parse::<u16>()
+    .unwrap_or(0);
+
+  let parsed_upto_param = params
+    .upto
+    .clone()
+    .unwrap_or(String::from("-1"))
+    .parse::<u16>()
+    .unwrap_or(0);
+
+  let valid_years = HashSet::from(crate::constants::YEARS_LIST);
+  if (!params.since.is_none() && !valid_years.contains(&parsed_since_param))
+    || (!params.upto.is_none() && !valid_years.contains(&parsed_upto_param))
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
   #[derive(Serialize, Deserialize, Debug)]
   struct APIResponse {
     update: Update,
@@ -55,6 +84,26 @@ pub async fn index() -> HttpResponse {
             recovered: daily_item.jumlah_sembuh.value as i32,
             deaths: daily_item.jumlah_meninggal.value as i32,
             active: daily_item.jumlah_dirawat.value as i32,
+          })
+          .collect();
+
+        let new_harian: Vec<ResponseStructure> = new_harian
+          .into_iter()
+          .filter(|daily| {
+            if !params.since.is_none() && !params.upto.is_none() {
+              return daily.year.parse::<u16>().unwrap() >= parsed_since_param
+                && daily.year.parse::<u16>().unwrap() <= parsed_upto_param;
+            }
+
+            if !params.since.is_none() {
+              return daily.year.parse::<u16>().unwrap() >= parsed_since_param;
+            }
+
+            if !params.upto.is_none() {
+              return daily.year.parse::<u16>().unwrap() <= parsed_upto_param;
+            }
+
+            true
           })
           .collect();
 
