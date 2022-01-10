@@ -41,8 +41,8 @@ docker run -d --name rust-covid-api -p 8081:8081 danilhendrasr/rust-covid-api
 ### Build from source
 #### Prerequisites
 - Rust 1.57 (used to write this program)
-- pkg-config
-- libssl-dev
+- pkg-config (for linux system)
+- libssl-dev (for linux system)
 
 #### Steps
 ```bash
@@ -58,19 +58,22 @@ cargo build --release
 # run the program, the app will be accessible through localhost:8081
 cargo run --release
 ```
+
 ## API Contract
-_to be updated_
+The API contract mostly stays the same as written in the technical assessment document, with only several minor additions such as:
+- The API will respond with `400 (Bad request)` response with `Invalid query parameter(s)` text body if invalid query parameter(s) are supplied to the following routes:
+  - `/yearly`
+  - `/monthly`
+  - `/monthly/<year>`
+  - `/daily`
+  - `/daily/<year>`
+  - `/daily/<year>/<month>`
+- The API will respond with `500 (Internal server error)` response with a short description in the body if it fails to fetch or process the data.
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See [LICENSE](https://github.com/danilhendrasr/nodeflux-technical-assessment/blob/main/LICENSE) for more information.
-
-
-<!-- CONTACT -->
-## Contact
-
-Danil Hendra Suryawan - danilhendrasr@gmail.com
 
 
 <!-- ACKNOWLEDGEMENTS -->
