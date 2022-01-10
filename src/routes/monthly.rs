@@ -71,8 +71,8 @@ pub async fn index(params: web::Query<QueryParams>) -> HttpResponse {
     .map(|x| x.parse::<u16>().unwrap_or(0))
     .collect::<Vec<u16>>();
 
-  if (!params.since.is_none() && parsed_since_param.contains(&0))
-    || (!params.upto.is_none() && parsed_upto_param.contains(&0))
+  if (params.since.is_some() && (parsed_since_param.contains(&0) || parsed_since_param.len() != 2))
+    || (params.upto.is_some() && (parsed_upto_param.contains(&0) || parsed_upto_param.len() != 2))
   {
     return HttpResponse::BadRequest()
       .status(reqwest::StatusCode::BAD_REQUEST)
@@ -340,8 +340,8 @@ pub async fn specific_year(
     .map(|x| x.parse::<u16>().unwrap_or(0))
     .collect::<Vec<u16>>();
 
-  if (params.since.is_some() && parsed_since_param.contains(&0))
-    || (params.upto.is_some() && parsed_upto_param.contains(&0))
+  if (params.since.is_some() && (parsed_since_param.contains(&0) || parsed_since_param.len() != 2))
+    || (params.upto.is_some() && (parsed_upto_param.contains(&0) || parsed_upto_param.len() != 2))
   {
     return HttpResponse::BadRequest()
       .status(reqwest::StatusCode::BAD_REQUEST)

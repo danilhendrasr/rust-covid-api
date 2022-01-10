@@ -1,6 +1,8 @@
 use actix_web::{get, web, HttpResponse};
 use chrono::prelude::*;
+use chrono_utilities::naive::DateTransitions;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 #[derive(Serialize, Debug)]
 struct ResponseStructure {
@@ -11,6 +13,19 @@ struct ResponseStructure {
   active: i32,
 }
 
+#[derive(Deserialize)]
+pub struct QueryParams {
+  since: Option<String>,
+  upto: Option<String>,
+}
+
+#[derive(Debug)]
+struct ParsedQueryParam {
+  year: u16,
+  month: u8,
+  date: u8,
+}
+
 type HandlerResponse = crate::api_types::HandlerResponse<Vec<ResponseStructure>>;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -18,14 +33,77 @@ struct Update {
   harian: Vec<crate::api_types::Harian>,
 }
 
-#[derive(Deserialize)]
-pub struct QueryParams {
-  _since: Option<String>,
-  _upto: Option<String>,
-}
-
 #[get("")]
-pub async fn index(_info: web::Query<QueryParams>) -> HttpResponse {
+pub async fn index(params: web::Query<QueryParams>) -> HttpResponse {
+  let parsed_since_param = params
+    .since
+    .clone()
+    .unwrap_or(String::from("0.0.0"))
+    .split(".")
+    .map(|x| x.parse::<u16>().unwrap_or(0))
+    .collect::<Vec<u16>>();
+
+  let parsed_upto_param = params
+    .upto
+    .clone()
+    .unwrap_or(String::from("0.0.0"))
+    .split(".")
+    .map(|x| x.parse::<u16>().unwrap_or(0))
+    .collect::<Vec<u16>>();
+
+  if (params.since.is_some() && (parsed_since_param.contains(&0) || parsed_since_param.len() != 3))
+    || (params.upto.is_some() && (parsed_upto_param.contains(&0) || parsed_upto_param.len() != 3))
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
+  let valid_years = HashSet::from(crate::constants::YEARS_LIST);
+  let valid_months = HashSet::from(crate::constants::MONTHS_LIST);
+
+  let parsed_since_param = ParsedQueryParam {
+    year: parsed_since_param[0],
+    month: parsed_since_param[1] as u8,
+    date: parsed_since_param[2] as u8,
+  };
+
+  let parsed_upto_param = ParsedQueryParam {
+    year: parsed_upto_param[0],
+    month: parsed_upto_param[1] as u8,
+    date: parsed_upto_param[2] as u8,
+  };
+
+  let since_param_is_valid = valid_years.contains(&parsed_since_param.year)
+    && valid_months.contains(&parsed_since_param.month)
+    && (parsed_since_param.date >= 1
+      && parsed_since_param.date
+        <= NaiveDate::from_ymd(
+          parsed_since_param.year as i32,
+          parsed_since_param.month as u32,
+          1,
+        )
+        .last_day_of_month() as u8);
+
+  let upto_param_is_valid = valid_years.contains(&parsed_upto_param.year)
+    && valid_months.contains(&parsed_upto_param.month)
+    && (parsed_upto_param.date >= 1
+      && parsed_upto_param.date
+        <= NaiveDate::from_ymd(
+          parsed_upto_param.year as i32,
+          parsed_upto_param.month as u32,
+          1,
+        )
+        .last_day_of_month() as u8);
+
+  if (params.since.is_some() && !since_param_is_valid)
+    || (params.upto.is_some() && !upto_param_is_valid)
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
   #[derive(Serialize, Deserialize, Debug)]
   struct APIResponse {
     update: Update,
@@ -59,6 +137,90 @@ pub async fn index(_info: web::Query<QueryParams>) -> HttpResponse {
           })
           .collect();
 
+        let new_harian = new_harian
+          .into_iter()
+          .filter(|daily| {
+            let parsed_daily_month = NaiveDate::parse_from_str(&daily.date, "%Y-%m-%d").unwrap();
+
+            if params.since.is_some() && params.upto.is_some() {
+              let since_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_since_param.year, parsed_since_param.month, parsed_since_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let upto_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_upto_param.year, parsed_upto_param.month, parsed_upto_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let since_compared = parsed_daily_month
+                .signed_duration_since(since_date)
+                .num_days();
+              let upto_compared = parsed_daily_month
+                .signed_duration_since(upto_date)
+                .num_days();
+
+              if since_compared >= 0 && upto_compared <= 0 {
+                return true;
+              } else {
+                return false;
+              };
+            }
+
+            if params.since.is_some() {
+              let since_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_since_param.year, parsed_since_param.month, parsed_since_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let since_compared = parsed_daily_month
+                .signed_duration_since(since_date)
+                .num_days();
+
+              if since_compared < 0 {
+                return false;
+              }
+
+              return true;
+            }
+
+            if params.upto.is_some() {
+              let upto_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_upto_param.year, parsed_upto_param.month, parsed_upto_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let upto_compared = parsed_daily_month
+                .signed_duration_since(upto_date)
+                .num_days();
+
+              if upto_compared > 0 {
+                return false;
+              }
+
+              return true;
+            }
+
+            true
+          })
+          .collect();
+
         HttpResponse::Ok().status(reqwest::StatusCode::OK).body(
           serde_json::to_string(&HandlerResponse {
             ok: true,
@@ -78,13 +240,86 @@ pub struct YearPath {
 }
 
 #[get("/{year}")]
-pub async fn specific_year(path: web::Path<YearPath>) -> HttpResponse {
+pub async fn specific_year(
+  path: web::Path<YearPath>,
+  params: web::Query<QueryParams>,
+) -> HttpResponse {
+  let selected_year = path.year;
+  let parsed_since_param = params
+    .since
+    .clone()
+    .unwrap_or(String::from("0.0.0"))
+    .split(".")
+    .map(|x| x.parse::<u16>().unwrap_or(0))
+    .collect::<Vec<u16>>();
+
+  let parsed_upto_param = params
+    .upto
+    .clone()
+    .unwrap_or(String::from("0.0.0"))
+    .split(".")
+    .map(|x| x.parse::<u16>().unwrap_or(0))
+    .collect::<Vec<u16>>();
+
+  if (params.since.is_some() && (parsed_since_param.contains(&0) || parsed_since_param.len() != 3))
+    || (params.upto.is_some() && (parsed_upto_param.contains(&0) || parsed_upto_param.len() != 3))
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
+  let valid_years = HashSet::from(crate::constants::YEARS_LIST);
+  let valid_months = HashSet::from(crate::constants::MONTHS_LIST);
+
+  let parsed_since_param = ParsedQueryParam {
+    year: parsed_since_param[0],
+    month: parsed_since_param[1] as u8,
+    date: parsed_since_param[2] as u8,
+  };
+
+  let parsed_upto_param = ParsedQueryParam {
+    year: parsed_upto_param[0],
+    month: parsed_upto_param[1] as u8,
+    date: parsed_upto_param[2] as u8,
+  };
+
+  let since_param_is_valid = parsed_since_param.year == selected_year
+    && valid_years.contains(&parsed_since_param.year)
+    && valid_months.contains(&parsed_since_param.month)
+    && (parsed_since_param.date >= 1
+      && parsed_since_param.date
+        <= NaiveDate::from_ymd(
+          parsed_since_param.year as i32,
+          parsed_since_param.month as u32,
+          1,
+        )
+        .last_day_of_month() as u8);
+
+  let upto_param_is_valid = parsed_upto_param.year == selected_year
+    && valid_years.contains(&parsed_upto_param.year)
+    && valid_months.contains(&parsed_upto_param.month)
+    && (parsed_upto_param.date >= 1
+      && parsed_upto_param.date
+        <= NaiveDate::from_ymd(
+          parsed_upto_param.year as i32,
+          parsed_upto_param.month as u32,
+          1,
+        )
+        .last_day_of_month() as u8);
+
+  if (params.since.is_some() && !since_param_is_valid)
+    || (params.upto.is_some() && !upto_param_is_valid)
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
   #[derive(Serialize, Deserialize, Debug)]
   struct APIResponse {
     update: Update,
   }
-
-  let selected_year = path.year;
 
   let resp = reqwest::get(crate::constants::COVID_API_ENDPOINT).await;
   match resp {
@@ -120,6 +355,90 @@ pub async fn specific_year(path: web::Path<YearPath>) -> HttpResponse {
           })
           .collect();
 
+        let new_harian = new_harian
+          .into_iter()
+          .filter(|daily| {
+            let parsed_daily_month = NaiveDate::parse_from_str(&daily.date, "%Y-%m-%d").unwrap();
+
+            if params.since.is_some() && params.upto.is_some() {
+              let since_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_since_param.year, parsed_since_param.month, parsed_since_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let upto_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_upto_param.year, parsed_upto_param.month, parsed_upto_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let since_compared = parsed_daily_month
+                .signed_duration_since(since_date)
+                .num_days();
+              let upto_compared = parsed_daily_month
+                .signed_duration_since(upto_date)
+                .num_days();
+
+              if since_compared >= 0 && upto_compared <= 0 {
+                return true;
+              } else {
+                return false;
+              };
+            }
+
+            if params.since.is_some() {
+              let since_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_since_param.year, parsed_since_param.month, parsed_since_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let since_compared = parsed_daily_month
+                .signed_duration_since(since_date)
+                .num_days();
+
+              if since_compared < 0 {
+                return false;
+              }
+
+              return true;
+            }
+
+            if params.upto.is_some() {
+              let upto_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_upto_param.year, parsed_upto_param.month, parsed_upto_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let upto_compared = parsed_daily_month
+                .signed_duration_since(upto_date)
+                .num_days();
+
+              if upto_compared > 0 {
+                return false;
+              }
+
+              return true;
+            }
+
+            true
+          })
+          .collect();
+
         HttpResponse::Ok().status(reqwest::StatusCode::OK).body(
           serde_json::to_string(&HandlerResponse {
             ok: true,
@@ -140,14 +459,90 @@ pub struct YearMonthPath {
 }
 
 #[get("/{year}/{month}")]
-pub async fn specific_month(path: web::Path<YearMonthPath>) -> HttpResponse {
+pub async fn specific_month(
+  path: web::Path<YearMonthPath>,
+  params: web::Query<QueryParams>,
+) -> HttpResponse {
+  let selected_year = path.year;
+  let selected_month = path.month;
+
+  let parsed_since_param = params
+    .since
+    .clone()
+    .unwrap_or(String::from("0.0.0"))
+    .split(".")
+    .map(|x| x.parse::<u16>().unwrap_or(0))
+    .collect::<Vec<u16>>();
+
+  let parsed_upto_param = params
+    .upto
+    .clone()
+    .unwrap_or(String::from("0.0.0"))
+    .split(".")
+    .map(|x| x.parse::<u16>().unwrap_or(0))
+    .collect::<Vec<u16>>();
+
+  if (params.since.is_some() && (parsed_since_param.contains(&0) || parsed_since_param.len() != 3))
+    || (params.upto.is_some() && (parsed_upto_param.contains(&0) || parsed_upto_param.len() != 3))
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
+  let valid_years = HashSet::from(crate::constants::YEARS_LIST);
+  let valid_months = HashSet::from(crate::constants::MONTHS_LIST);
+
+  let parsed_since_param = ParsedQueryParam {
+    year: parsed_since_param[0],
+    month: parsed_since_param[1] as u8,
+    date: parsed_since_param[2] as u8,
+  };
+
+  let parsed_upto_param = ParsedQueryParam {
+    year: parsed_upto_param[0],
+    month: parsed_upto_param[1] as u8,
+    date: parsed_upto_param[2] as u8,
+  };
+
+  let since_param_is_valid = parsed_since_param.year == selected_year
+    && valid_years.contains(&parsed_since_param.year)
+    && parsed_since_param.month == selected_month
+    && valid_months.contains(&parsed_since_param.month)
+    && (parsed_since_param.date >= 1
+      && parsed_since_param.date
+        <= NaiveDate::from_ymd(
+          parsed_since_param.year as i32,
+          parsed_since_param.month as u32,
+          1,
+        )
+        .last_day_of_month() as u8);
+
+  let upto_param_is_valid = parsed_upto_param.year == selected_year
+    && valid_years.contains(&parsed_upto_param.year)
+    && parsed_upto_param.month == selected_month
+    && valid_months.contains(&parsed_upto_param.month)
+    && (parsed_upto_param.date >= 1
+      && parsed_upto_param.date
+        <= NaiveDate::from_ymd(
+          parsed_upto_param.year as i32,
+          parsed_upto_param.month as u32,
+          1,
+        )
+        .last_day_of_month() as u8);
+
+  if (params.since.is_some() && !since_param_is_valid)
+    || (params.upto.is_some() && !upto_param_is_valid)
+  {
+    return HttpResponse::BadRequest()
+      .status(reqwest::StatusCode::BAD_REQUEST)
+      .body("Invalid query parameter(s)");
+  }
+
   #[derive(Serialize, Deserialize, Debug)]
   struct APIResponse {
     update: Update,
   }
-
-  let selected_year = path.year;
-  let selected_month = path.month;
 
   let resp = reqwest::get(crate::constants::COVID_API_ENDPOINT).await;
   match resp {
@@ -184,6 +579,90 @@ pub async fn specific_month(path: web::Path<YearMonthPath>) -> HttpResponse {
             recovered: daily_item.jumlah_sembuh.value as i32,
             deaths: daily_item.jumlah_meninggal.value as i32,
             active: daily_item.jumlah_dirawat.value as i32,
+          })
+          .collect();
+
+        let new_harian = new_harian
+          .into_iter()
+          .filter(|daily| {
+            let parsed_daily_month = NaiveDate::parse_from_str(&daily.date, "%Y-%m-%d").unwrap();
+
+            if params.since.is_some() && params.upto.is_some() {
+              let since_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_since_param.year, parsed_since_param.month, parsed_since_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let upto_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_upto_param.year, parsed_upto_param.month, parsed_upto_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let since_compared = parsed_daily_month
+                .signed_duration_since(since_date)
+                .num_days();
+              let upto_compared = parsed_daily_month
+                .signed_duration_since(upto_date)
+                .num_days();
+
+              if since_compared >= 0 && upto_compared <= 0 {
+                return true;
+              } else {
+                return false;
+              };
+            }
+
+            if params.since.is_some() {
+              let since_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_since_param.year, parsed_since_param.month, parsed_since_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let since_compared = parsed_daily_month
+                .signed_duration_since(since_date)
+                .num_days();
+
+              if since_compared < 0 {
+                return false;
+              }
+
+              return true;
+            }
+
+            if params.upto.is_some() {
+              let upto_date = NaiveDate::parse_from_str(
+                &format!(
+                  "{}-{:0>2}-{}",
+                  parsed_upto_param.year, parsed_upto_param.month, parsed_upto_param.date
+                ),
+                "%Y-%m-%d",
+              )
+              .unwrap();
+
+              let upto_compared = parsed_daily_month
+                .signed_duration_since(upto_date)
+                .num_days();
+
+              if upto_compared > 0 {
+                return false;
+              }
+
+              return true;
+            }
+
+            true
           })
           .collect();
 
