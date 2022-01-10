@@ -431,6 +431,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "chrono-utilities"
+version = "0.0.0-alpha1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a690f90eeeff8b71ef9bb609577b8d1de74656d3e8178cbfce60e55da2269089"
+dependencies = [
+ "chrono",
+ "time 0.1.43",
+]
+
+[[package]]
 name = "const_fn"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1110,6 +1120,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "chrono",
+ "chrono-utilities",
  "reqwest",
  "serde",
  "serde_json",
