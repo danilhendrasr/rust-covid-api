@@ -2,7 +2,9 @@ use actix_web::{web, App, HttpServer};
 
 mod api_types;
 mod constants;
+mod domains;
 mod routes;
+mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

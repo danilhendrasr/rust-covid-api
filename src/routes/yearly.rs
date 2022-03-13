@@ -1,3 +1,4 @@
+use crate::{api_types, constants::*, domains::QueryParams, utils::get_json_data_from_source_api};
 use actix_web::{get, web, HttpResponse};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -5,224 +6,191 @@ use std::collections::HashSet;
 
 #[derive(Deserialize)]
 pub struct YearPath {
-  year: u16,
+    year: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Update {
-  harian: Vec<crate::api_types::Harian>,
+    harian: Vec<api_types::Harian>,
 }
 
 #[derive(Serialize, Debug)]
-struct ResponseStructure {
-  year: String,
-  positive: i32,
-  recovered: i32,
-  deaths: i32,
-  active: i32,
+struct YearObject {
+    year: String,
+    positive: i32,
+    recovered: i32,
+    deaths: i32,
+    active: i32,
 }
 
-#[derive(Deserialize)]
-pub struct IndexQueryParams {
-  since: Option<String>,
-  upto: Option<String>,
+struct Response(Vec<YearObject>);
+
+impl Response {
+    fn distinct_years(&self) -> Vec<u32> {
+        let mut distinct_years = self
+            .0
+            .iter()
+            .map(|daily_item| daily_item.year.parse::<u32>().unwrap())
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+
+        distinct_years.sort();
+        distinct_years
+    }
+
+    pub fn _filter<T: Fn() -> bool>(self, _closure: T) -> Self {
+        // TODO: Implement a filter function for easier filtering
+        todo!()
+    }
+
+    pub fn fold_by_year(self) -> Self {
+        let years_list = self.distinct_years();
+
+        let mut to_return: Vec<YearObject> = Vec::new();
+        years_list.iter().for_each(|year| {
+            let folded = self
+                .0
+                .iter()
+                .filter(|daily| daily.year == *year.to_string())
+                .fold(
+                    YearObject {
+                        year: year.to_string(),
+                        positive: 0,
+                        recovered: 0,
+                        deaths: 0,
+                        active: 0,
+                    },
+                    |mut acc, next| {
+                        acc.positive += next.positive;
+                        acc.recovered += next.recovered;
+                        acc.deaths += next.deaths;
+                        acc.active += next.active;
+                        acc
+                    },
+                );
+
+            to_return.push(folded);
+        });
+
+        Response(to_return)
+    }
+}
+
+impl From<SourceAPIResponse> for Response {
+    fn from(api_response: SourceAPIResponse) -> Self {
+        let result = api_response
+            .update
+            .harian
+            .iter()
+            .map(|daily_item| YearObject {
+                year: DateTime::parse_from_rfc3339(&daily_item.key_as_string)
+                    .unwrap()
+                    .format("%Y")
+                    .to_string(),
+                positive: daily_item.jumlah_positif.value as i32,
+                recovered: daily_item.jumlah_sembuh.value as i32,
+                deaths: daily_item.jumlah_meninggal.value as i32,
+                active: daily_item.jumlah_dirawat.value as i32,
+            })
+            .collect::<Vec<YearObject>>();
+
+        Response(result)
+    }
+}
+
+impl FromIterator<YearObject> for Response {
+    fn from_iter<I: IntoIterator<Item = YearObject>>(iter: I) -> Self {
+        let mut holder: Vec<YearObject> = Vec::new();
+
+        for i in iter {
+            holder.push(i);
+        }
+
+        Self(holder)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct SourceAPIResponse {
+    update: Update,
 }
 
 #[get("")]
-pub async fn index(params: web::Query<IndexQueryParams>) -> HttpResponse {
-  let parsed_since_param = params
-    .since
-    .clone()
-    .unwrap_or(String::from("0"))
-    .parse::<u16>()
-    .unwrap_or(0);
+pub async fn index(params: web::Query<QueryParams>) -> actix_web::Result<HttpResponse> {
+    let QueryParams { since, upto } = params.0;
 
-  let parsed_upto_param = params
-    .upto
-    .clone()
-    .unwrap_or(String::from("-1"))
-    .parse::<u16>()
-    .unwrap_or(0);
+    type HandlerResponse = api_types::HandlerResponse<Vec<YearObject>>;
 
-  let valid_years = HashSet::from(crate::constants::YEARS_LIST);
-  if (!params.since.is_none() && !valid_years.contains(&parsed_since_param))
-    || (!params.upto.is_none() && !valid_years.contains(&parsed_upto_param))
-  {
-    return HttpResponse::BadRequest()
-      .status(reqwest::StatusCode::BAD_REQUEST)
-      .body("Invalid query parameter(s)");
-  }
+    let source_api_resp =
+        match get_json_data_from_source_api::<SourceAPIResponse>(COVID_API_ENDPOINT).await {
+            Ok(value) => value,
+            Err(message) => return Err(actix_web::error::ErrorInternalServerError(message)),
+        };
 
-  #[derive(Serialize, Deserialize, Debug)]
-  struct APIResponse {
-    update: Update,
-  }
-
-  type HandlerResponse = crate::api_types::HandlerResponse<Vec<ResponseStructure>>;
-  let resp = reqwest::get(crate::constants::COVID_API_ENDPOINT).await;
-  match resp {
-    Err(_) => HttpResponse::InternalServerError()
-      .status(reqwest::StatusCode::INTERNAL_SERVER_ERROR)
-      .body("Could not get the data, please retry in a few minutes"),
-
-    Ok(raw_response) => match raw_response.json::<APIResponse>().await {
-      Err(_) => HttpResponse::InternalServerError()
-        .status(reqwest::StatusCode::INTERNAL_SERVER_ERROR)
-        .body("There's something wrong with us, hang tight"),
-
-      Ok(json_response) => {
-        let new_harian: Vec<ResponseStructure> = json_response
-          .update
-          .harian
-          .into_iter()
-          .map(|daily_item| ResponseStructure {
-            year: DateTime::parse_from_rfc3339(&daily_item.key_as_string)
-              .unwrap()
-              .format("%Y")
-              .to_string(),
-            positive: daily_item.jumlah_positif.value as i32,
-            recovered: daily_item.jumlah_sembuh.value as i32,
-            deaths: daily_item.jumlah_meninggal.value as i32,
-            active: daily_item.jumlah_dirawat.value as i32,
-          })
-          .collect();
-
-        let new_harian: Vec<ResponseStructure> = new_harian
-          .into_iter()
-          .filter(|daily| {
-            if !params.since.is_none() && !params.upto.is_none() {
-              return daily.year.parse::<u16>().unwrap() >= parsed_since_param
-                && daily.year.parse::<u16>().unwrap() <= parsed_upto_param;
+    let daily_cases = Response::from(source_api_resp)
+        .0
+        .into_iter()
+        .filter(|daily| {
+            if let Some(value) = &since {
+                return daily.year.parse::<u32>().unwrap() >= value.content()[0];
             }
 
-            if !params.since.is_none() {
-              return daily.year.parse::<u16>().unwrap() >= parsed_since_param;
+            return true;
+        })
+        .filter(|daily| {
+            if let Some(value) = &upto {
+                return daily.year.parse::<u32>().unwrap() <= value.content()[0];
             }
 
-            if !params.upto.is_none() {
-              return daily.year.parse::<u16>().unwrap() <= parsed_upto_param;
-            }
+            return true;
+        })
+        .collect::<Response>();
 
-            true
-          })
-          .collect();
+    let to_return = daily_cases.fold_by_year().0;
 
-        let mut years_list: Vec<u16> = new_harian
-          .iter()
-          .map(|daily_item| daily_item.year.parse::<u16>().unwrap())
-          .collect::<HashSet<u16>>()
-          .into_iter()
-          .collect();
-
-        years_list.sort();
-        let mut to_return: Vec<ResponseStructure> = Vec::new();
-        years_list.iter().for_each(|year| {
-          let folded = new_harian
-            .iter()
-            .filter(|daily| daily.year == *year.to_string())
-            .fold(
-              ResponseStructure {
-                year: year.to_string(),
-                positive: 0,
-                recovered: 0,
-                deaths: 0,
-                active: 0,
-              },
-              |mut acc, next| {
-                acc.positive += next.positive;
-                acc.recovered += next.recovered;
-                acc.deaths += next.deaths;
-                acc.active += next.active;
-                acc
-              },
-            );
-
-          to_return.push(folded);
-        });
-
-        HttpResponse::Ok().status(reqwest::StatusCode::OK).body(
-          serde_json::to_string(&HandlerResponse {
+    Ok(HttpResponse::Ok().status(reqwest::StatusCode::OK).body(
+        serde_json::to_string(&HandlerResponse {
             ok: true,
             data: to_return,
-            message: String::from("success"),
-          })
-          .unwrap(),
-        )
-      }
-    },
-  }
+            message: "success".to_string(),
+        })
+        .unwrap(),
+    ))
 }
 
 #[get("/{year}")]
-pub async fn specific_year(path: web::Path<YearPath>) -> HttpResponse {
-  type HandlerResponse = crate::api_types::HandlerResponse<ResponseStructure>;
-  #[derive(Serialize, Deserialize, Debug)]
-  struct APIResponse {
-    update: Update,
-  }
+pub async fn specific_year(path: web::Path<YearPath>) -> actix_web::Result<HttpResponse> {
+    type HandlerResponse = api_types::HandlerResponse<YearObject>;
 
-  let selected_year = path.year;
+    let selected_year = path.year;
 
-  let resp = reqwest::get(crate::constants::COVID_API_ENDPOINT).await;
-  match resp {
-    Err(_) => HttpResponse::InternalServerError()
-      .status(reqwest::StatusCode::INTERNAL_SERVER_ERROR)
-      .body("Could not get the data, please retry in a few minutes"),
+    let raw_json_resp =
+        match get_json_data_from_source_api::<SourceAPIResponse>(COVID_API_ENDPOINT).await {
+            Ok(value) => value,
+            Err(message) => return Err(actix_web::error::ErrorInternalServerError(message)),
+        };
 
-    Ok(raw_response) => match raw_response.json::<APIResponse>().await {
-      Err(_) => HttpResponse::InternalServerError()
-        .status(reqwest::StatusCode::INTERNAL_SERVER_ERROR)
-        .body("There's something wrong with us, hang tight"),
+    let aggregated = Response::from(raw_json_resp)
+        .0
+        .into_iter()
+        .filter(|daily_item| &daily_item.year.parse().unwrap() == selected_year as i32)
+        .collect::<Response>()
+        .fold_by_year();
 
-      Ok(json_response) => {
-        let new_harian: Vec<ResponseStructure> = json_response
-          .update
-          .harian
-          .into_iter()
-          .filter(|daily_item| {
-            DateTime::parse_from_rfc3339(&daily_item.key_as_string)
-              .unwrap()
-              .year()
-              == selected_year as i32
-          })
-          .map(|daily_item| ResponseStructure {
-            year: DateTime::parse_from_rfc3339(&daily_item.key_as_string)
-              .unwrap()
-              .format("%Y")
-              .to_string(),
-            positive: daily_item.jumlah_positif.value as i32,
-            recovered: daily_item.jumlah_sembuh.value as i32,
-            deaths: daily_item.jumlah_meninggal.value as i32,
-            active: daily_item.jumlah_dirawat.value as i32,
-          })
-          .collect();
+    let to_return = match aggregated.0.into_iter().nth(0) {
+        Some(value) => value,
+        None => return Err(actix_web::error::ErrorInternalServerError(
+            "Oops, we've made a mistake. Check back in a few minutes. Sorry for the inconvenience!",
+        )),
+    };
 
-        let to_return = new_harian.iter().fold(
-          ResponseStructure {
-            year: selected_year.to_string(),
-            positive: 0,
-            recovered: 0,
-            deaths: 0,
-            active: 0,
-          },
-          |mut accumulator, next| {
-            accumulator.positive += next.positive;
-            accumulator.recovered += next.recovered;
-            accumulator.deaths += next.deaths;
-            accumulator.active += next.active;
-            accumulator
-          },
-        );
-
-        HttpResponse::Ok().status(reqwest::StatusCode::OK).body(
-          serde_json::to_string(&HandlerResponse {
+    Ok(HttpResponse::Ok().status(reqwest::StatusCode::OK).body(
+        serde_json::to_string(&HandlerResponse {
             ok: true,
             data: to_return,
-            message: String::from("success"),
-          })
-          .unwrap(),
-        )
-      }
-    },
-  }
+            message: "success".to_string(),
+        })
+        .unwrap(),
+    ))
 }
