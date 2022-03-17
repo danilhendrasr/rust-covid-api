@@ -38,16 +38,16 @@ pub async fn index(params: web::Query<QueryParams>) -> HttpResponse {
     let parsed_since_param = params
         .since
         .clone()
-        .unwrap_or(String::from("0.0.0"))
-        .split(".")
+        .unwrap_or_else(|| String::from("0.0.0"))
+        .split('.')
         .map(|x| x.parse::<u16>().unwrap_or(0))
         .collect::<Vec<u16>>();
 
     let parsed_upto_param = params
         .upto
         .clone()
-        .unwrap_or(String::from("0.0.0"))
-        .split(".")
+        .unwrap_or_else(|| String::from("0.0.0"))
+        .split('.')
         .map(|x| x.parse::<u16>().unwrap_or(0))
         .collect::<Vec<u16>>();
 
@@ -137,10 +137,6 @@ pub async fn index(params: web::Query<QueryParams>) -> HttpResponse {
                         deaths: daily_item.jumlah_meninggal.value as i32,
                         active: daily_item.jumlah_dirawat.value as i32,
                     })
-                    .collect();
-
-                let new_harian = new_harian
-                    .into_iter()
                     .filter(|daily| {
                         let parsed_daily_month =
                             NaiveDate::parse_from_str(&daily.date, "%Y-%m-%d").unwrap();
@@ -175,11 +171,7 @@ pub async fn index(params: web::Query<QueryParams>) -> HttpResponse {
                                 .signed_duration_since(upto_date)
                                 .num_days();
 
-                            if since_compared >= 0 && upto_compared <= 0 {
-                                return true;
-                            } else {
-                                return false;
-                            };
+                            return since_compared >= 0 && upto_compared <= 0;
                         }
 
                         if params.since.is_some() {
@@ -259,16 +251,16 @@ pub async fn specific_year(
     let parsed_since_param = params
         .since
         .clone()
-        .unwrap_or(String::from("0.0.0"))
-        .split(".")
+        .unwrap_or_else(|| String::from("0.0.0"))
+        .split('.')
         .map(|x| x.parse::<u16>().unwrap_or(0))
         .collect::<Vec<u16>>();
 
     let parsed_upto_param = params
         .upto
         .clone()
-        .unwrap_or(String::from("0.0.0"))
-        .split(".")
+        .unwrap_or_else(|| String::from("0.0.0"))
+        .split('.')
         .map(|x| x.parse::<u16>().unwrap_or(0))
         .collect::<Vec<u16>>();
 
@@ -366,10 +358,6 @@ pub async fn specific_year(
                         deaths: daily_item.jumlah_meninggal.value as i32,
                         active: daily_item.jumlah_dirawat.value as i32,
                     })
-                    .collect();
-
-                let new_harian = new_harian
-                    .into_iter()
                     .filter(|daily| {
                         let parsed_daily_month =
                             NaiveDate::parse_from_str(&daily.date, "%Y-%m-%d").unwrap();
@@ -404,11 +392,7 @@ pub async fn specific_year(
                                 .signed_duration_since(upto_date)
                                 .num_days();
 
-                            if since_compared >= 0 && upto_compared <= 0 {
-                                return true;
-                            } else {
-                                return false;
-                            };
+                            return since_compared >= 0 && upto_compared <= 0;
                         }
 
                         if params.since.is_some() {
@@ -491,16 +475,16 @@ pub async fn specific_month(
     let parsed_since_param = params
         .since
         .clone()
-        .unwrap_or(String::from("0.0.0"))
-        .split(".")
+        .unwrap_or_else(|| String::from("0.0.0"))
+        .split('.')
         .map(|x| x.parse::<u16>().unwrap_or(0))
         .collect::<Vec<u16>>();
 
     let parsed_upto_param = params
         .upto
         .clone()
-        .unwrap_or(String::from("0.0.0"))
-        .split(".")
+        .unwrap_or_else(|| String::from("0.0.0"))
+        .split('.')
         .map(|x| x.parse::<u16>().unwrap_or(0))
         .collect::<Vec<u16>>();
 
@@ -604,10 +588,6 @@ pub async fn specific_month(
                         deaths: daily_item.jumlah_meninggal.value as i32,
                         active: daily_item.jumlah_dirawat.value as i32,
                     })
-                    .collect();
-
-                let new_harian = new_harian
-                    .into_iter()
                     .filter(|daily| {
                         let parsed_daily_month =
                             NaiveDate::parse_from_str(&daily.date, "%Y-%m-%d").unwrap();
@@ -642,11 +622,7 @@ pub async fn specific_month(
                                 .signed_duration_since(upto_date)
                                 .num_days();
 
-                            if since_compared >= 0 && upto_compared <= 0 {
-                                return true;
-                            } else {
-                                return false;
-                            };
+                            return since_compared >= 0 && upto_compared <= 0;
                         }
 
                         if params.since.is_some() {

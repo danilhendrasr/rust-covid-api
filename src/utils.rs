@@ -4,7 +4,7 @@ use chrono_utilities::naive::DateTransitions;
 use std::num::ParseIntError;
 
 pub fn is_valid_date_param(vec: &[&str]) -> bool {
-    is_valid_year_month_param(&vec[..=1]) && is_valid_day_str(&vec[0], &vec[1], &vec[2])
+    is_valid_year_month_param(&vec[..=1]) && is_valid_day_str(vec[0], vec[1], vec[2])
 }
 
 pub fn is_valid_day_str(year: &str, month: &str, day: &str) -> bool {

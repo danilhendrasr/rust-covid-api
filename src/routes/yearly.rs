@@ -35,7 +35,7 @@ impl Response {
             .into_iter()
             .collect::<Vec<_>>();
 
-        distinct_years.sort();
+        distinct_years.sort_unstable();
         distinct_years
     }
 
@@ -136,14 +136,14 @@ pub async fn index(params: web::Query<QueryParams>) -> actix_web::Result<HttpRes
                 return daily.year.parse::<u32>().unwrap() >= value.content()[0];
             }
 
-            return true;
+            true
         })
         .filter(|daily| {
             if let Some(value) = &upto {
                 return daily.year.parse::<u32>().unwrap() <= value.content()[0];
             }
 
-            return true;
+            true
         })
         .collect::<Response>();
 
@@ -174,11 +174,11 @@ pub async fn specific_year(path: web::Path<YearPath>) -> actix_web::Result<HttpR
     let aggregated = Response::from(raw_json_resp)
         .0
         .into_iter()
-        .filter(|daily_item| &daily_item.year.parse().unwrap() == selected_year as i32)
+        .filter(|daily_item| daily_item.year.parse::<i32>().unwrap() == selected_year as i32)
         .collect::<Response>()
         .fold_by_year();
 
-    let to_return = match aggregated.0.into_iter().nth(0) {
+    let to_return = match aggregated.0.into_iter().next() {
         Some(value) => value,
         None => return Err(actix_web::error::ErrorInternalServerError(
             "Oops, we've made a mistake. Check back in a few minutes. Sorry for the inconvenience!",

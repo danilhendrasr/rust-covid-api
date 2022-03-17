@@ -109,7 +109,7 @@ impl<'de> Deserialize<'de> for QueryParams {
             }
         }
 
-        const FIELDS: &'static [&'static str] = &["since", "upto"];
+        const FIELDS: &[&str] = &["since", "upto"];
         deserializer.deserialize_struct("QueryParams", FIELDS, QueryParamsVisitor)
     }
 }
