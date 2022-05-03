@@ -47,9 +47,6 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-20.04
     steps:
-      docker:
-    runs-on: ubuntu-latest
-    steps:
       - name: Checkout
         uses: actions/checkout@v2
 
