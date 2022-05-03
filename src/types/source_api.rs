@@ -53,7 +53,7 @@ impl Response {
     ///     "active": 2
     /// }
     /// ```
-    pub fn to_daily(self) -> Daily {
+    pub fn to_daily(&self) -> Daily {
         self.update
             .harian
             .iter()

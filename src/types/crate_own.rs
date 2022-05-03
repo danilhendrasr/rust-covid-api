@@ -52,7 +52,7 @@ impl Daily {
     ///     ...
     /// ]
     /// ```
-    pub fn to_yearly(self) -> Yearly {
+    pub fn to_yearly(&self) -> Yearly {
         let years_list = self.get_distinct_years();
 
         let mut to_return: Vec<YearlyItem> = Vec::new();
@@ -92,9 +92,9 @@ impl Daily {
     ///     "active": 109963
     /// }
     /// ```
-    pub fn to_specific_yearly(self, year: i32) -> Result<YearlyItem, String> {
-        match self.to_yearly().0.into_iter().find(|e| e.year == year) {
-            Some(value) => Ok(value),
+    pub fn to_specific_yearly(&self, year: i32) -> Result<YearlyItem, String> {
+        match self.to_yearly().0.iter().find(|e| e.year == year) {
+            Some(value) => Ok((*value).clone()),
             None => Err("Year not found".into()),
         }
     }
@@ -123,7 +123,7 @@ pub struct DailyItem {
     pub active: i32,
 }
 
-#[derive(serde::Serialize, Debug)]
+#[derive(serde::Serialize, Debug, Clone)]
 pub struct YearlyItem {
     pub year: i32,
     pub positive: i32,
