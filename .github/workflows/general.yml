@@ -3,8 +3,28 @@ name: Build
 on: [push, pull_request]
 
 jobs:
+  fmt:
+    name: Formatter
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Install toochain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt
+
+      - name: Run rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
   clippy:
-    name: Run clippy
+    name: Clippy
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repo
@@ -17,14 +37,14 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Run clippy
+      - name: Run cargo clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
 
   build:
-    name: Build the binary in release mode
+    name: Build
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repo
@@ -35,7 +55,7 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Build binary
+      - name: Build binary in release mode
         uses: actions-rs/cargo@v1
         with:
           command: build
