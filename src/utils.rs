@@ -1,4 +1,7 @@
-use crate::constants::{MONTHS_LIST, YEARS_LIST};
+use crate::{
+    constants::{COVID_API_ENDPOINT, MONTHS_LIST, YEARS_LIST},
+    types,
+};
 use chrono::prelude::NaiveDate;
 use chrono_utilities::naive::DateTransitions;
 use std::num::ParseIntError;
@@ -57,23 +60,12 @@ pub fn is_valid_month_str(month: &str) -> bool {
     MONTHS_LIST.contains(&(month as u8))
 }
 
-pub async fn get_json_data_from_source_api<T: serde::de::DeserializeOwned>(
-    url: &str,
-) -> Result<T, String> {
-    let resp = match reqwest::get(url).await {
-        Ok(value) => value,
-        Err(_) => return Err("Could not get the data, please retry in a few minutes".to_string()),
-    };
+pub async fn fetch_data_from_source_api() -> Result<types::source_api::Response, String> {
+    let resp = reqwest::get(COVID_API_ENDPOINT)
+        .await
+        .map_err(|_| "Failed fetching data from source API.")?;
 
-    let json_resp = match resp.json::<T>().await {
-        Ok(value) => value,
-        Err(_) => {
-            return Err(
-                "Cannot parse data from the source API, this is not our fault, don't blame us."
-                    .to_string(),
-            )
-        }
-    };
+    let json = resp.json().await.map_err(|_| "Failed processing data.")?;
 
-    Ok(json_resp)
+    Ok(json)
 }

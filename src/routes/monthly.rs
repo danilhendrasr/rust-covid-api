@@ -1,3 +1,4 @@
+use crate::types;
 use actix_web::{get, web, HttpResponse};
 use chrono::prelude::*;
 use chrono_utilities::naive::DateTransitions;
@@ -15,7 +16,7 @@ struct ResponseStructure {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Update {
-    harian: Vec<crate::api_types::Harian>,
+    harian: Vec<types::source_api::Harian>,
 }
 
 #[derive(Deserialize)]
@@ -108,7 +109,7 @@ pub async fn index(params: web::Query<QueryParams>) -> HttpResponse {
             .body("Invalid query parameter(s)");
     }
 
-    type HandlerResponse = crate::api_types::HandlerResponse<Vec<ResponseStructure>>;
+    type HandlerResponse = types::HandlerResponseTemplate<Vec<ResponseStructure>>;
     #[derive(Serialize, Deserialize, Debug)]
     struct APIResponse {
         update: Update,
@@ -375,7 +376,7 @@ pub async fn specific_year(
             .body("Invalid query parameter(s)");
     }
 
-    type HandlerResponse = crate::api_types::HandlerResponse<Vec<ResponseStructure>>;
+    type HandlerResponse = types::HandlerResponseTemplate<Vec<ResponseStructure>>;
     #[derive(Serialize, Deserialize, Debug)]
     struct APIResponse {
         update: Update,
@@ -562,7 +563,7 @@ pub async fn specific_year(
 
 #[get("/{year}/{month}")]
 pub async fn specific_month(path: web::Path<YearMonthPath>) -> HttpResponse {
-    type HandlerResponse = crate::api_types::HandlerResponse<ResponseStructure>;
+    type HandlerResponse = types::HandlerResponseTemplate<ResponseStructure>;
 
     #[derive(Serialize, Deserialize, Debug)]
     struct APIResponse {

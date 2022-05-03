@@ -1,9 +1,9 @@
 use actix_web::{web, App, HttpServer};
 
-mod api_types;
 mod constants;
 mod domains;
 mod routes;
+mod types;
 mod utils;
 
 #[actix_web::main]
@@ -13,7 +13,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(routes::index::index_handler))
             .service(
                 web::scope("/yearly")
-                    .service(routes::yearly::index)
+                    .service(routes::yearly::index_handler)
                     .service(routes::yearly::specific_year),
             )
             .service(

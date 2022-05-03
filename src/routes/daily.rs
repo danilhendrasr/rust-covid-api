@@ -1,3 +1,4 @@
+use crate::types;
 use actix_web::{get, web, HttpResponse};
 use chrono::prelude::*;
 use chrono_utilities::naive::DateTransitions;
@@ -26,11 +27,11 @@ struct ParsedQueryParam {
     date: u8,
 }
 
-type HandlerResponse = crate::api_types::HandlerResponse<Vec<ResponseStructure>>;
+type HandlerResponse = types::HandlerResponseTemplate<Vec<ResponseStructure>>;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Update {
-    harian: Vec<crate::api_types::Harian>,
+    harian: Vec<types::source_api::Harian>,
 }
 
 #[get("")]

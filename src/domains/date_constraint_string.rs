@@ -27,20 +27,4 @@ impl DateConstraintString {
 
         Ok(DateConstraintString(value))
     }
-
-    pub fn content(&self) -> Vec<u32> {
-        let content = &self.0;
-        if !content.contains('.') {
-            // The value is guaranteed to be valid, thus we can unwrap safely
-            return vec![parse_date_part_str(content).unwrap()];
-        }
-
-        let splitted_content = content
-            .split('.')
-            .into_iter()
-            .map(|date_part| parse_date_part_str(date_part).unwrap())
-            .collect::<Vec<u32>>();
-
-        splitted_content
-    }
 }
