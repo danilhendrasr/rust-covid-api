@@ -1,4 +1,4 @@
-name: Build
+name: General
 
 on: [push, pull_request]
 
