@@ -10,7 +10,7 @@ pub struct Response {
 impl Response {
     /// Convert daily cases JSON structure from source API into our own daily format.
     /// ### From
-    /// ```
+    /// ```json
     /// {
     ///     "key_as_string": "2020-03-02T00:00:00.000Z",
     ///     "key": 1583107200000,
@@ -42,7 +42,7 @@ impl Response {
     /// }
     /// ```
     /// ### To
-    /// ```
+    /// ```json
     /// {
     ///     "year": 2020,
     ///     "month": 3,
