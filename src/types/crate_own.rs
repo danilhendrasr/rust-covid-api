@@ -12,11 +12,8 @@ pub struct Daily(pub Vec<DailyItem>);
 pub struct Yearly(pub Vec<YearlyItem>);
 
 impl Daily {
-    /// Get distinct years from all daily cases
-    /// #### Output
-    /// ```
-    /// [2019, 2020, 2021, 2022] // as a vector
-    /// ```
+    /// Get distinct years from all daily cases.<br>
+    /// **Output**: `[2019, 2020, 2021, 2022]`
     fn get_distinct_years(&self) -> Vec<i32> {
         let mut distinct_years = self
             .0
@@ -33,7 +30,7 @@ impl Daily {
     /// Convert daily into yearly format.
     ///
     /// #### Output
-    /// ```
+    /// ```json
     /// [
     ///     {
     ///         "year": 2020,
@@ -83,7 +80,7 @@ impl Daily {
     /// Aggregate daily into yearly format and pick 1 specific year.
     ///
     /// #### Output
-    /// ```
+    /// ```json
     /// {
     ///     "year": 2020,
     ///     "positive": 743198,

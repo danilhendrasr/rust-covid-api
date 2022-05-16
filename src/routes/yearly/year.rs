@@ -24,7 +24,7 @@ pub async fn specific_year(
 
     let specific_year = daily
         .to_specific_yearly(selected_year)
-        .map_err(YearlyEndpointError::BadRequest)?;
+        .map_err(YearlyEndpointError::ResourceNotFound)?;
 
     Ok(HttpResponse::Ok().body(
         serde_json::to_string(&HandlerResponse {

@@ -7,6 +7,8 @@ pub enum YearlyEndpointError {
     BadRequest(String),
     #[display(fmt = "{}", _0)]
     UnexpectedError(String),
+    #[display(fmt = "{}", _0)]
+    ResourceNotFound(String),
 }
 
 impl From<reqwest::Error> for YearlyEndpointError {
@@ -19,6 +21,7 @@ impl ResponseError for YearlyEndpointError {
     fn error_response(&self) -> HttpResponse {
         let mut http_response = match self {
             YearlyEndpointError::BadRequest(_) => HttpResponse::BadRequest(),
+            YearlyEndpointError::ResourceNotFound(_) => HttpResponse::NotFound(),
             _ => HttpResponse::InternalServerError(),
         };
 

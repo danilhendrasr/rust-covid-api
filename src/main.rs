@@ -1,10 +1,5 @@
 use actix_web::{web, App, HttpServer};
-
-mod constants;
-mod domains;
-mod routes;
-mod types;
-mod utils;
+use nodeflux_assignment::routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
