@@ -1,3 +1,9 @@
+<p align="center" style="font-size: 5px">
+  🚧 This repo currently undergoes a major refactoring effort, don't expect things to function normally 🚧 
+</p>
+
+---
+
 <p align="center">
   <h1 align="center">Rust COVID-19 API</h1>
 
