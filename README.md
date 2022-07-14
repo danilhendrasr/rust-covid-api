@@ -48,7 +48,7 @@ sequenceDiagram
     This API->>Client: send monthly cases
 ```
 
-### Why Rust?
+### Why Rust? 🤔
 Initially the reason for choosing Rust was because I presume it's 
 more impressive in the recruiter's eyes if I built it using Rust 
 and so that I can treat it as my Rust learning playground as well.
@@ -60,6 +60,16 @@ of data into another form). On the other hand, Python is not as fast
 in doing such operations and C++ is too hard for a beginner
 like to get productive quickly,
 thus in my opinion Rust is the ideal choice for this one.
+
+### No caching? 😕
+Not at the moment.
+
+### Tests?
+There are some tests in place already but it's incomplete, 
+I'm planning to complete it after I consider the refactor is enough. 
+
+### API Contract 📗
+See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/API-Contract).
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -94,17 +104,6 @@ cargo build --release
 # run the program, the app will be accessible through localhost:8081
 cargo run --release
 ```
-
-## API Contract
-The API contract mostly stays the same as written in the technical assessment document, with only several minor additions such as:
-- The API will respond with `400 (Bad request)` response with `Invalid query parameter(s)` text body if invalid query parameter(s) are supplied to the following routes:
-  - `/yearly`
-  - `/monthly`
-  - `/monthly/<year>`
-  - `/daily`
-  - `/daily/<year>`
-  - `/daily/<year>/<month>`
-- The API will respond with `500 (Internal server error)` response with a short description in the body if it fails to fetch or process the data.
 
 <!-- LICENSE -->
 ## License
