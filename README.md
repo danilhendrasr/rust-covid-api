@@ -21,15 +21,49 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-In order to be able to participate in Nodeflux's internship program as a software engineer, 
-applicants are required to complete a technical assessment where they are tasked to build a containerized COVID-19 API using either C++, Rust, or Python.
+In order to participate in Nodeflux's internship program as a software engineer, 
+applicants are required to complete a technical assessment. We are tasked to build a 
+containerized COVID-19 API using either C++, Rust, or Python.
 This project is made to complete the said technical assessment. 
 
+As said above, this project is a COVID-19 REST API where you can get daily, monthly, 
+and yearly case data as well as specific date, month, or year. 
+The data source is from https://data.covid19.go.id/public/api/update.json,
+it is a COVID-19 API seemingly provided by the Indonesian government,
+but the design is not quite good because it only provides 1 endpoint and 
+the only respond it provides is in a daily format containing cases data 
+since the begining of COVID-19 up until now.
+
+This API is intended to provide more friendly interface and several response 
+format options by masking the data source. 
+
+The following is the diagram:
+```mermaid
+sequenceDiagram
+    participant Client
+    participant This API
+    participant Data Source
+    Client->>This API: request monthly cases
+    This API->>Data Source: send get request
+    Data Source->>This API: send JSON response
+    This API->>This API: convert response to monthly format
+    This API->>Client: send monthly case data
+```
+
 ### Why Rust?
-I've tinker around with C++, Rust, and Python in the past but never really got too deep, so I still consider myself a beginner in those three languages. 
-I also have a lingering interest in system programming since a while back and Rust has caught my interest and curiosity too. 
-So based on these, I figured I might as well just pick Rust to build this project with. 
-Besides, I can treat it as my Rust learning playground.
+We were given 3 choice to build this API with: Python, Rust, and C++.
+Initially the reason for choosing Rust was because I presume it's 
+more impressive in the recruiter's eyes if I built it using Rust 
+and so that I can treat it as my Rust learning playground as well.
+
+But looking back, I think one more reason I can add to that is
+Rust is fast in doing CPU-heavy operations, which is what this API
+does on a regular basis (converting quite large amount
+of data into another form). On the other hand, Python is not as fast 
+in doing such operations and C++ is too hard for a beginner
+like to get productive quickly and it seems like there are many 
+pitfalls one need to watch out for as well,
+thus in my opinion Rust is the ideal choice for this one.
 
 <!-- GETTING STARTED -->
 ## Getting Started
