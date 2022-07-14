@@ -47,7 +47,7 @@ sequenceDiagram
     This API->>Data Source: send get request
     Data Source->>This API: send JSON response
     This API->>This API: convert response to monthly format
-    This API->>Client: send monthly case data
+    This API->>Client: send monthly cases
 ```
 
 ### Why Rust?
