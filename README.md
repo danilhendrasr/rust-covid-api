@@ -69,7 +69,7 @@ There are some tests in place already but it's incomplete,
 I'm planning to complete it after I consider the refactor is enough. 
 
 ### API Contract 📗
-See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/%F0%9F%9A%A7-API-Contract-%F0%9F%9A%A7).
+See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/API-Contract).
 
 <!-- GETTING STARTED -->
 ## Getting Started
