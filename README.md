@@ -1,3 +1,5 @@
+<div id="top"></div>
+
 <p align="center" style="font-size: 5px">
   🚧 This repo currently undergoes a major refactoring effort, don't expect things to function normally 🚧 
 </p>
@@ -71,6 +73,8 @@ I'm planning to complete it after I consider the refactor is enough.
 ### API Contract 📗
 See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/API-Contract).
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 <!-- GETTING STARTED -->
 ## Getting Started
 ### Using Docker
@@ -83,6 +87,8 @@ docker pull danilhendrasr/rust-covid-api
 # Run the container, will be accessible through localhost:8081
 docker run -d --name rust-covid-api -p 8081:8081 danilhendrasr/rust-covid-api
 ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Build from source
 #### Prerequisites
@@ -105,10 +111,25 @@ cargo build --release
 cargo run --release
 ```
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- ROADMAP -->
+## Roadmap
+
+- [ ] Complete the refactoring
+- [ ] Deploy to cloud provider
+- [ ] Create automated deployment pipeline
+- [ ] Add more tests
+- [ ] Add caching mechanism
+
+See the [open issues][issues-url] for a full list of proposed features (and known issues).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See [LICENSE](https://github.com/danilhendrasr/nodeflux-technical-assessment/blob/main/LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE][license-url] for more information.
 
 
 <!-- ACKNOWLEDGEMENTS -->
@@ -117,10 +138,18 @@ Distributed under the MIT License. See [LICENSE](https://github.com/danilhendras
 * [Rust](https://github.com/rust-lang/rust)
 * [Actix Web](https://github.com/rust-lang/rust)
 
-
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[repo-url]: (https://github.com/danilhendrasr/rust-covid-api)
+[stars-shield]: https://img.shields.io/github/stars/danilhendrasr/rust-covid-api.svg?style=for-the-badge
+[stars-url]: https://github.com/danilhendrasr/rust-covid-api/stargazers
+[issues-shield]: https://img.shields.io/github/issues/danilhendrasr/rust-covid-api.svg?style=for-the-badge
+[issues-url]: https://github.com/danilhendrasr/rust-covid-api/issues
+[license-shield]: https://img.shields.io/github/license/danilhendrasr/rust-covid-api.svg?style=for-the-badge
+[license-url]: https://github.com/danilhendrasr/rust-covid-api/blob/main/LICENSE
+
 [contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
 [contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
