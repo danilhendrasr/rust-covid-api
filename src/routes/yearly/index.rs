@@ -8,9 +8,7 @@ use actix_web::{get, web, HttpResponse};
 type HandlerResponse = types::HandlerResponseTemplate<Vec<types::YearlyItem>>;
 
 #[get("")]
-pub async fn index(
-    params: web::Query<QueryParams>,
-) -> actix_web::Result<HttpResponse, YearlyEndpointError> {
+pub async fn index(params: web::Query<QueryParams>) -> Result<HttpResponse, YearlyEndpointError> {
     let mut daily_cases = fetch_data_from_source_api()
         .await
         .map_err(YearlyEndpointError::UnexpectedError)?

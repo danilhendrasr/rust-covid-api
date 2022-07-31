@@ -1,5 +1,6 @@
 use actix_web::{web, App, HttpServer};
-use nodeflux_assignment::routes;
+use actix_web_lab::middleware::from_fn;
+use nodeflux_assignment::routes::{self, monthly::middleware::filter_malformed_query_params};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -13,9 +14,8 @@ async fn main() -> std::io::Result<()> {
             )
             .service(
                 web::scope("/monthly")
-                    .service(routes::monthly::index)
-                    .service(routes::monthly::specific_year)
-                    .service(routes::monthly::specific_month),
+                    .wrap(from_fn(filter_malformed_query_params))
+                    .service(routes::monthly::index_handler),
             )
             .service(
                 web::scope("/daily")

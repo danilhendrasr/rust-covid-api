@@ -9,9 +9,62 @@ pub struct HandlerResponseTemplate<T> {
 }
 
 pub struct Daily(pub Vec<DailyItem>);
+pub struct Monthly(pub Vec<MonthlyItem>);
 pub struct Yearly(pub Vec<YearlyItem>);
 
 impl Daily {
+    /// Get distinct months from all daily cases in a year.<br>
+    /// **Output**: `[10, 11, 12]`
+    fn get_distinct_months(&self, year: &i32) -> Vec<u32> {
+        let mut distinct_months = self
+            .0
+            .iter()
+            .filter(|daily_item| daily_item.year == *year)
+            .map(|daily_item| daily_item.month)
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+
+        distinct_months.sort_unstable();
+        distinct_months
+    }
+
+    pub fn to_monthly(&self) -> Monthly {
+        let years_list = self.get_distinct_years();
+
+        let mut to_return: Vec<MonthlyItem> = Vec::new();
+        years_list.iter().for_each(|current_year| {
+            let months_list = self.get_distinct_months(current_year);
+            months_list.iter().for_each(|current_month| {
+                let folded = self
+                    .0
+                    .iter()
+                    .filter(|daily| daily.year == *current_year && daily.month == *current_month)
+                    .fold(
+                        MonthlyItem {
+                            year: *current_year,
+                            month: *current_month,
+                            positive: 0,
+                            recovered: 0,
+                            deaths: 0,
+                            active: 0,
+                        },
+                        |mut acc, next| {
+                            acc.positive += next.positive;
+                            acc.recovered += next.recovered;
+                            acc.deaths += next.deaths;
+                            acc.active += next.active;
+                            acc
+                        },
+                    );
+
+                to_return.push(folded);
+            })
+        });
+
+        Monthly(to_return)
+    }
+
     /// Get distinct years from all daily cases.<br>
     /// **Output**: `[2019, 2020, 2021, 2022]`
     fn get_distinct_years(&self) -> Vec<i32> {
@@ -120,6 +173,16 @@ pub struct DailyItem {
     pub active: i32,
 }
 
+#[derive(serde::Serialize)]
+pub struct MonthlyItem {
+    pub year: i32,
+    pub month: u32,
+    pub positive: i32,
+    pub recovered: i32,
+    pub deaths: i32,
+    pub active: i32,
+}
+
 #[derive(serde::Serialize, Debug, Clone)]
 pub struct YearlyItem {
     pub year: i32,
@@ -127,4 +190,10 @@ pub struct YearlyItem {
     pub recovered: i32,
     pub deaths: i32,
     pub active: i32,
+}
+
+#[derive(serde::Deserialize)]
+pub struct QueryParams {
+    pub since: Option<String>,
+    pub upto: Option<String>,
 }
