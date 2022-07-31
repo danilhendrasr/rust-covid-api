@@ -65,6 +65,17 @@ impl Daily {
         Monthly(to_return)
     }
 
+    pub fn to_monthly_in_a_year(&self, year: i32) -> Monthly {
+        let filtered_months = self
+            .to_monthly()
+            .0
+            .into_iter()
+            .filter(|e| e.year == year)
+            .collect::<Vec<MonthlyItem>>();
+
+        Monthly(filtered_months)
+    }
+
     /// Get distinct years from all daily cases.<br>
     /// **Output**: `[2019, 2020, 2021, 2022]`
     fn get_distinct_years(&self) -> Vec<i32> {

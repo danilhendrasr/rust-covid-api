@@ -9,17 +9,7 @@ use actix_web_lab::middleware::Next;
 
 use crate::types::QueryParams;
 
-#[derive(Debug, Clone)]
-pub struct MonthlyQueryParams {
-    pub since: Option<YearMonth>,
-    pub upto: Option<YearMonth>,
-}
-
-#[derive(Debug, Clone)]
-pub struct YearMonth {
-    pub year: i32,
-    pub month: u32,
-}
+use super::types::{MonthlyQueryParams, YearMonth};
 
 pub async fn filter_malformed_query_params(
     req: ServiceRequest,
