@@ -4,10 +4,17 @@ use crate::utils::fetch_data_from_source_api;
 use actix_web::{get, web, HttpResponse};
 use chrono::NaiveDate;
 use chrono_utilities::naive::DateTransitions;
+use serde::Deserialize;
 
-#[get("")]
-pub async fn index(
+#[derive(Deserialize)]
+pub struct YearPath {
+    year: i32,
+}
+
+#[get("/{year}")]
+pub async fn specific_year(
     params: web::ReqData<MonthlyQueryParams>,
+    path: web::Path<YearPath>,
 ) -> Result<HttpResponse, MonthlyEndpointError> {
     let params = params.into_inner();
     let mut daily_cases = fetch_data_from_source_api()
@@ -53,5 +60,6 @@ pub async fn index(
             .collect();
     }
 
-    Ok(HttpResponse::Ok().body(serde_json::to_string(&daily_cases.to_monthly().0).unwrap()))
+    Ok(HttpResponse::Ok()
+        .body(serde_json::to_string(&daily_cases.to_monthly_in_a_year(path.year).0).unwrap()))
 }
