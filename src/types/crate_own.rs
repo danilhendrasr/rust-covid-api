@@ -76,6 +76,18 @@ impl Daily {
         Monthly(filtered_months)
     }
 
+    pub fn to_specific_monthly(&self, year: i32, month: i32) -> Result<MonthlyItem, String> {
+        match self
+            .to_monthly_in_a_year(year)
+            .0
+            .into_iter()
+            .find(|x| x.month == month as u32)
+        {
+            Some(value) => Ok(value),
+            None => Err("Year not found".into()),
+        }
+    }
+
     /// Get distinct years from all daily cases.<br>
     /// **Output**: `[2019, 2020, 2021, 2022]`
     fn get_distinct_years(&self) -> Vec<i32> {
@@ -154,8 +166,8 @@ impl Daily {
     /// }
     /// ```
     pub fn to_specific_yearly(&self, year: i32) -> Result<YearlyItem, String> {
-        match self.to_yearly().0.iter().find(|e| e.year == year) {
-            Some(value) => Ok((*value).clone()),
+        match self.to_yearly().0.into_iter().find(|e| e.year == year) {
+            Some(value) => Ok(value),
             None => Err("Year not found".into()),
         }
     }
