@@ -16,7 +16,8 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/monthly")
                     .wrap(from_fn(filter_malformed_query_params))
                     .service(routes::monthly::index_handler)
-                    .service(routes::monthly::specific_year),
+                    .service(routes::monthly::specific_year)
+                    .service(routes::monthly::specific_month),
             )
             .service(
                 web::scope("/daily")
