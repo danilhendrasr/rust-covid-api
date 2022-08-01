@@ -1,9 +1,5 @@
 <div id="top"></div>
 
-<p align="center" style="font-size: 5px">
-  🚧 This repo currently undergoes a major refactoring effort, don't expect things to function normally 🚧 
-</p>
-
 ---
 
 <p align="center">
@@ -68,7 +64,7 @@ Not at the moment.
 
 ### Tests?
 There are some tests in place already but it's incomplete, 
-I'm planning to complete it after I consider the refactor is enough. 
+I'm planning to complete it soon, see roadmap. 
 
 ### API Contract 📗
 See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/API-Contract).
@@ -116,7 +112,7 @@ cargo run --release
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Complete the refactoring
+- [x] Complete the refactoring
 - [ ] Deploy to cloud provider
 - [ ] Create automated deployment pipeline
 - [ ] Add more tests
