@@ -23,7 +23,8 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/daily")
                     .wrap(from_fn(daily::middleware::filter_malformed_query_params))
                     .service(routes::daily::index_handler)
-                    .service(routes::daily::specific_year),
+                    .service(routes::daily::specific_year)
+                    .service(routes::daily::specific_month),
             )
     })
     .bind("0.0.0.0:8081")?
