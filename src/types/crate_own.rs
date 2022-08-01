@@ -13,6 +13,20 @@ pub struct Monthly(pub Vec<MonthlyItem>);
 pub struct Yearly(pub Vec<YearlyItem>);
 
 impl Daily {
+    pub fn get_all_days_in_a_year(self, year: i32) -> Result<Daily, String> {
+        let filtered = self
+            .0
+            .into_iter()
+            .filter(|daily| daily.year == year)
+            .collect::<Vec<DailyItem>>();
+
+        if filtered.is_empty() {
+            return Err("Year not found".into());
+        }
+
+        Ok(Daily(filtered))
+    }
+
     /// Get distinct months from all daily cases in a year.<br>
     /// **Output**: `[10, 11, 12]`
     fn get_distinct_months(&self, year: &i32) -> Vec<u32> {
@@ -219,4 +233,9 @@ pub struct YearlyItem {
 pub struct QueryParams {
     pub since: Option<String>,
     pub upto: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct YearPath {
+    pub year: i32,
 }
