@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Response {
-    update: Update,
+    pub update: Update,
 }
 
 impl Response {
@@ -76,8 +76,10 @@ impl Response {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Update {
-    harian: Vec<Harian>,
+pub struct Update {
+    pub harian: Vec<Harian>,
+    pub total: Total,
+    pub penambahan: Penambahan,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -110,9 +112,10 @@ pub struct Total {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Penambahan {
-    pub jumlah_positif: u32,
-    pub jumlah_meninggal: u32,
-    pub jumlah_sembuh: u32,
-    pub jumlah_dirawat: u32,
+    pub jumlah_positif: i64,
+    pub jumlah_meninggal: i64,
+    pub jumlah_sembuh: i64,
+    pub jumlah_dirawat: i64,
     pub tanggal: String,
+    pub created: String,
 }
