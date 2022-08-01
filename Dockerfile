@@ -8,7 +8,7 @@ RUN cargo install --path .
 
 FROM gcr.io/distroless/cc-debian10
 
-COPY --from=build /usr/local/cargo/bin/rust-covid-api /usr/local/bin/rust-covid-api
+COPY --from=build /usr/local/cargo/bin/rust_covid_api /usr/local/bin/rust-covid-api
 EXPOSE 8081
 
 CMD ["rust-covid-api"]
