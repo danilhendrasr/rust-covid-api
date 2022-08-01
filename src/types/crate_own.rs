@@ -42,6 +42,19 @@ impl Daily {
         Ok(Daily(filtered))
     }
 
+    pub fn get_specific_day(self, year: i32, month: i32, day: i32) -> Result<DailyItem, String> {
+        let filtered = self
+            .get_all_daily_cases_in_a_month(year, month)?
+            .0
+            .into_iter()
+            .find(|daily| daily.day == day as u32);
+
+        match filtered {
+            Some(daily_case) => Ok(daily_case),
+            None => Err("Day not found".into()),
+        }
+    }
+
     /// Get distinct months from all daily cases in a year.<br>
     /// **Output**: `[10, 11, 12]`
     fn get_distinct_months(&self, year: &i32) -> Vec<u32> {
@@ -263,4 +276,11 @@ pub struct YearPath {
 pub struct YearMonthPath {
     pub year: i32,
     pub month: i32,
+}
+
+#[derive(serde::Deserialize)]
+pub struct YearMonthDayPath {
+    pub year: i32,
+    pub month: i32,
+    pub day: i32,
 }
