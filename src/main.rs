@@ -24,7 +24,8 @@ async fn main() -> std::io::Result<()> {
                     .wrap(from_fn(daily::middleware::filter_malformed_query_params))
                     .service(routes::daily::index_handler)
                     .service(routes::daily::specific_year)
-                    .service(routes::daily::specific_month),
+                    .service(routes::daily::specific_month)
+                    .service(routes::daily::specific_day),
             )
     })
     .bind("0.0.0.0:8081")?

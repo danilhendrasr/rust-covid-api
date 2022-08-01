@@ -1,9 +1,10 @@
+mod day;
 mod index;
 pub mod middleware;
 mod month;
 pub mod types;
 mod year;
 
-pub use index::index as index_handler;
-pub use month::specific_month;
-pub use year::specific_year;
+pub use {
+    day::specific_day, index::index as index_handler, month::specific_month, year::specific_year,
+};
