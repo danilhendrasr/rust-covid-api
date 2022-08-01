@@ -3,7 +3,7 @@ use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
 
 #[derive(Serialize, Debug)]
-struct HandlerResponse {
+struct IndexEndpointResponse {
     total_positive: u32,
     total_recovered: u32,
     total_deaths: u32,
@@ -39,7 +39,7 @@ pub async fn index_handler() -> Result<HttpResponse, SlashEndpointError> {
         .map_err(SlashEndpointError::UnexpectedError)?;
 
     Ok(HttpResponse::Ok().body(
-        serde_json::to_string(&HandlerResponse {
+        serde_json::to_string(&IndexEndpointResponse {
             total_positive: y.update.total.jumlah_positif,
             total_recovered: y.update.total.jumlah_sembuh,
             total_deaths: y.update.total.jumlah_meninggal,
