@@ -1,14 +1,14 @@
 FROM rust:latest as build
 ENV PKG_CONFIG_ALLOW_CROSS=1
 
-WORKDIR /usr/src/nodeflux-assignment
+WORKDIR /usr/src/rust-covid-api
 COPY . .
 
 RUN cargo install --path .
 
 FROM gcr.io/distroless/cc-debian10
 
-COPY --from=build /usr/local/cargo/bin/nodeflux-assignment /usr/local/bin/nodeflux-assignment
+COPY --from=build /usr/local/cargo/bin/rust-covid-api /usr/local/bin/rust-covid-api
 EXPOSE 8081
 
-CMD ["nodeflux-assignment"]
+CMD ["rust-covid-api"]
