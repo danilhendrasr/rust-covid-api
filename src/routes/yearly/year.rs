@@ -1,15 +1,12 @@
-use crate::{types, utils::fetch_data_from_source_api};
-use actix_web::{get, web, HttpResponse};
-use serde::Deserialize;
+use super::errors::YearlyEndpointError;
+use crate::{
+    types::{self, YearPath},
+    utils::fetch_data_from_source_api,
+};
 
-use super::YearlyEndpointError;
+use actix_web::{get, web, HttpResponse};
 
 type HandlerResponse = types::HandlerResponseTemplate<types::YearlyItem>;
-
-#[derive(Deserialize)]
-pub struct YearPath {
-    year: i32,
-}
 
 #[get("/{year}")]
 pub async fn specific_year(

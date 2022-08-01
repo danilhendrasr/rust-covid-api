@@ -1,8 +1,5 @@
-use crate::{
-    routes::yearly::{QueryParams, YearlyEndpointError},
-    types,
-    utils::fetch_data_from_source_api,
-};
+use super::{common::types::QueryParams, errors::YearlyEndpointError};
+use crate::{types, utils::fetch_data_from_source_api};
 use actix_web::{get, web, HttpResponse};
 
 type HandlerResponse = types::HandlerResponseTemplate<Vec<types::YearlyItem>>;
