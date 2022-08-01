@@ -1,5 +1,5 @@
 use actix_web::{test, web, App};
-use nodeflux_assignment::routes;
+use rust_covid_api::routes;
 
 mod all_days {
     use super::*;

@@ -1,6 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
-use nodeflux_assignment::routes::{self, daily, monthly};
+use rust_covid_api::routes::{self, daily, monthly};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

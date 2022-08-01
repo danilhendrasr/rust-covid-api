@@ -970,21 +970,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nodeflux-assignment"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "actix-web-lab",
- "chrono",
- "chrono-utilities",
- "derive_more",
- "reqwest",
- "serde",
- "serde_json",
- "serde_urlencoded",
-]
-
-[[package]]
 name = "num-integer"
 version = "0.1.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1253,6 +1238,21 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
+]
+
+[[package]]
+name = "rust-covid-api"
+version = "1.1.0"
+dependencies = [
+ "actix-web",
+ "actix-web-lab",
+ "chrono",
+ "chrono-utilities",
+ "derive_more",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
 ]
 
 [[package]]
