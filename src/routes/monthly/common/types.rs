@@ -4,6 +4,8 @@ use actix_web::{HttpResponse, ResponseError};
 pub enum MonthlyEndpointError {
     #[display(fmt = "{}", _0)]
     UnexpectedError(String),
+    #[display(fmt = "{}", _0)]
+    NotFound(String),
 }
 
 impl From<reqwest::Error> for MonthlyEndpointError {
@@ -14,7 +16,11 @@ impl From<reqwest::Error> for MonthlyEndpointError {
 
 impl ResponseError for MonthlyEndpointError {
     fn error_response(&self) -> HttpResponse {
-        let mut http_response = HttpResponse::InternalServerError();
+        let mut http_response = match self {
+            MonthlyEndpointError::UnexpectedError(_) => HttpResponse::InternalServerError(),
+            MonthlyEndpointError::NotFound(_) => HttpResponse::NotFound(),
+        };
+
         http_response.body(self.to_string())
     }
 }

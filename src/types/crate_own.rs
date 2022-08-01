@@ -79,26 +79,30 @@ impl Daily {
         Monthly(to_return)
     }
 
-    pub fn to_monthly_in_a_year(&self, year: i32) -> Monthly {
-        let filtered_months = self
+    pub fn get_all_months_in_a_year(&self, year: i32) -> Result<Monthly, String> {
+        let filtered = self
             .to_monthly()
             .0
             .into_iter()
             .filter(|e| e.year == year)
             .collect::<Vec<MonthlyItem>>();
 
-        Monthly(filtered_months)
+        if filtered.is_empty() {
+            return Err("Year not found".into());
+        }
+
+        Ok(Monthly(filtered))
     }
 
-    pub fn to_specific_monthly(&self, year: i32, month: i32) -> Result<MonthlyItem, String> {
+    pub fn get_specific_month(self, year: i32, month: i32) -> Result<MonthlyItem, String> {
         match self
-            .to_monthly_in_a_year(year)
+            .get_all_months_in_a_year(year)?
             .0
             .into_iter()
             .find(|x| x.month == month as u32)
         {
             Some(value) => Ok(value),
-            None => Err("Year not found".into()),
+            None => Err("Month not found".into()),
         }
     }
 

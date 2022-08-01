@@ -20,8 +20,8 @@ pub async fn specific_month(path: web::Path<Path>) -> Result<HttpResponse, Month
     Ok(HttpResponse::Ok().body(
         serde_json::to_string(
             &daily_cases
-                .to_specific_monthly(path.year, path.month)
-                .map_err(MonthlyEndpointError::UnexpectedError)?,
+                .get_specific_month(path.year, path.month)
+                .map_err(MonthlyEndpointError::NotFound)?,
         )
         .unwrap(),
     ))

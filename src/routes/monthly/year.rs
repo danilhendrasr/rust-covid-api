@@ -54,6 +54,13 @@ pub async fn specific_year(
             .collect();
     }
 
-    Ok(HttpResponse::Ok()
-        .body(serde_json::to_string(&daily_cases.to_monthly_in_a_year(path.year).0).unwrap()))
+    Ok(HttpResponse::Ok().body(
+        serde_json::to_string(
+            &daily_cases
+                .get_all_months_in_a_year(path.year)
+                .map_err(MonthlyEndpointError::NotFound)?
+                .0,
+        )
+        .unwrap(),
+    ))
 }
