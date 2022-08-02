@@ -1,9 +1,17 @@
+use std::io::ErrorKind;
+
 use actix_web::{web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
 use rust_covid_api::routes::{self, daily, monthly};
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<(), std::io::Error> {
+    let port = std::env::var("PORT")
+        .ok()
+        .map(|val| val.parse::<u16>())
+        .unwrap_or(Ok(8082))
+        .map_err(|_| std::io::Error::new(ErrorKind::InvalidInput, "Invalid port configuration."))?;
+
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(routes::index::index_handler))
@@ -28,7 +36,7 @@ async fn main() -> std::io::Result<()> {
                     .service(routes::daily::specific_day),
             )
     })
-    .bind("0.0.0.0:8081")?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
