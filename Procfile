@@ -1,0 +1,1 @@
+web: ./target/release/rust_covid_api
