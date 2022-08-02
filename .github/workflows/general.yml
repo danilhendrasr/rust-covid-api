@@ -43,24 +43,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
 
-  build:
-    name: Build
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-
-      - name: Build binary in release mode
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-
   test:
     name: Test
     runs-on: ubuntu-20.04
@@ -77,3 +59,35 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+
+  build-and-push:
+    name: Build and Push Image to Heroku Container Registry
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker image
+        run: docker build -t registry.heroku.com/${{ secrets.HEROKU_APP }}/web:latest .
+
+      - name: Login to Heroku Container Registry
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku container:login
+
+      - name: Push Docker images
+        # see here for the details of the release phase https://devcenter.heroku.com/articles/container-registry-and-runtime#release-phase
+        run: |
+          docker push registry.heroku.com/${{ secrets.HEROKU_APP }}/web
+
+      - name: Release
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku container:release -a ${{ secrets.HEROKU_APP }} web
