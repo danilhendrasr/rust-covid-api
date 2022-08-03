@@ -108,12 +108,12 @@ Run the following command
 ```bash
 cargo test
 ```
-> Notes: some tests might fail when being run in a certain situation.
-> For example:
-> The test for yearly endpoinds might fail if it's being run on the first day
+> **Note**<br>
+> Some tests might fail when being run in a certain situation.
+>
+> For example, the test for yearly endpoints might fail if it's being run on the first day
 > of a new year because the code uses the current date and time to determine
 > the latest date and time, while the source API might haven't updated its data.
-> Thus causing the test to fail.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
