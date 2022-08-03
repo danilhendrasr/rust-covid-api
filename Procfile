@@ -1,1 +1,1 @@
-web: rust-covid-api
+web: ./target/release/rust_covid_api
