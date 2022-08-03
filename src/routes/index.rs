@@ -1,17 +1,17 @@
 use crate::utils::fetch_data_from_source_api;
-use actix_web::{HttpResponse, ResponseError};
-use serde::Serialize;
+use actix_web::{http::header::ContentType, HttpResponse, ResponseError};
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug)]
-struct IndexEndpointResponse {
-    total_positive: u32,
-    total_recovered: u32,
-    total_deaths: u32,
-    total_active: u32,
-    new_positive: i64,
-    new_recovered: i64,
-    new_deaths: i64,
-    new_active: i64,
+#[derive(Serialize, Debug, Deserialize)]
+pub struct IndexEndpointResponse {
+    pub total_positive: u32,
+    pub total_recovered: u32,
+    pub total_deaths: u32,
+    pub total_active: u32,
+    pub new_positive: i64,
+    pub new_recovered: i64,
+    pub new_deaths: i64,
+    pub new_active: i64,
 }
 
 #[derive(Debug, derive_more::Display)]
@@ -38,7 +38,7 @@ pub async fn index_handler() -> Result<HttpResponse, SlashEndpointError> {
         .await
         .map_err(SlashEndpointError::UnexpectedError)?;
 
-    Ok(HttpResponse::Ok().body(
+    Ok(HttpResponse::Ok().content_type(ContentType::json()).body(
         serde_json::to_string(&IndexEndpointResponse {
             total_positive: y.update.total.jumlah_positif,
             total_recovered: y.update.total.jumlah_sembuh,
