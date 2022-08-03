@@ -1,7 +1,7 @@
 use super::types::{DailyEndpointError, DailyQueryParams};
 use crate::{types::YearPath, utils::fetch_data_from_source_api};
 
-use actix_web::{get, web, HttpResponse};
+use actix_web::{get, http::header::ContentType, web, HttpResponse};
 use chrono::NaiveDate;
 
 #[get("/{year}")]
@@ -48,7 +48,7 @@ pub async fn specific_year(
             .collect();
     }
 
-    Ok(HttpResponse::Ok().body(
+    Ok(HttpResponse::Ok().content_type(ContentType::json()).body(
         serde_json::to_string(
             &daily_cases
                 .get_all_days_in_a_year(path.year)

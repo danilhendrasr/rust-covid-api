@@ -223,7 +223,7 @@ impl FromIterator<DailyItem> for Daily {
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct DailyItem {
     pub year: i32,
     pub month: u32,
