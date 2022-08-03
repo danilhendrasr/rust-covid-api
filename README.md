@@ -113,8 +113,7 @@ cargo run --release
 ## Roadmap
 
 - [x] Complete the refactoring
-- [ ] Deploy to cloud provider
-- [ ] Create automated deployment pipeline
+- [x] Create automated deployment pipeline
 - [ ] Add more tests
 - [ ] Add caching mechanism
 
