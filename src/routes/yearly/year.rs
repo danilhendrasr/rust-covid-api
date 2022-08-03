@@ -1,7 +1,7 @@
 use super::errors::YearlyEndpointError;
 use crate::{types::YearPath, utils::fetch_data_from_source_api};
 
-use actix_web::{get, http::header::ContentType, web, HttpResponse};
+use actix_web::{get, web, HttpResponse};
 
 #[get("/{year}")]
 pub async fn specific_year(
@@ -14,12 +14,9 @@ pub async fn specific_year(
         .map_err(YearlyEndpointError::UnexpectedError)?
         .to_daily();
 
-    Ok(HttpResponse::Ok().content_type(ContentType::json()).body(
-        serde_json::to_string(
-            &daily
-                .to_specific_yearly(selected_year)
-                .map_err(YearlyEndpointError::ResourceNotFound)?,
-        )
-        .unwrap(),
+    Ok(HttpResponse::Ok().json(
+        daily
+            .to_specific_yearly(selected_year)
+            .map_err(YearlyEndpointError::ResourceNotFound)?,
     ))
 }

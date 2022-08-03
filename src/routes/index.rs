@@ -1,5 +1,5 @@
 use crate::utils::fetch_data_from_source_api;
-use actix_web::{http::header::ContentType, HttpResponse, ResponseError};
+use actix_web::{HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug, Deserialize)]
@@ -38,17 +38,14 @@ pub async fn index_handler() -> Result<HttpResponse, SlashEndpointError> {
         .await
         .map_err(SlashEndpointError::UnexpectedError)?;
 
-    Ok(HttpResponse::Ok().content_type(ContentType::json()).body(
-        serde_json::to_string(&IndexEndpointResponse {
-            total_positive: y.update.total.jumlah_positif,
-            total_recovered: y.update.total.jumlah_sembuh,
-            total_deaths: y.update.total.jumlah_meninggal,
-            total_active: y.update.total.jumlah_dirawat,
-            new_positive: y.update.penambahan.jumlah_positif,
-            new_recovered: y.update.penambahan.jumlah_sembuh,
-            new_deaths: y.update.penambahan.jumlah_meninggal,
-            new_active: y.update.penambahan.jumlah_dirawat,
-        })
-        .unwrap(),
-    ))
+    Ok(HttpResponse::Ok().json(IndexEndpointResponse {
+        total_positive: y.update.total.jumlah_positif,
+        total_recovered: y.update.total.jumlah_sembuh,
+        total_deaths: y.update.total.jumlah_meninggal,
+        total_active: y.update.total.jumlah_dirawat,
+        new_positive: y.update.penambahan.jumlah_positif,
+        new_recovered: y.update.penambahan.jumlah_sembuh,
+        new_deaths: y.update.penambahan.jumlah_meninggal,
+        new_active: y.update.penambahan.jumlah_dirawat,
+    }))
 }

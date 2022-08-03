@@ -1,7 +1,7 @@
 use super::types::DailyEndpointError;
 use crate::{types::YearMonthDayPath, utils::fetch_data_from_source_api};
 
-use actix_web::{get, http::header::ContentType, web, HttpResponse};
+use actix_web::{get, web, HttpResponse};
 
 #[get("/{year}/{month}/{day}")]
 pub async fn specific_day(
@@ -14,7 +14,5 @@ pub async fn specific_day(
         .get_specific_day(path.year, path.month, path.day)
         .map_err(DailyEndpointError::NotFound)?;
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(serde_json::to_string(&daily_case).unwrap()))
+    Ok(HttpResponse::Ok().json(daily_case))
 }

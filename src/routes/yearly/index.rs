@@ -1,6 +1,6 @@
 use super::{common::types::QueryParams, errors::YearlyEndpointError};
 use crate::utils::fetch_data_from_source_api;
-use actix_web::{get, http::header::ContentType, web, HttpResponse};
+use actix_web::{get, web, HttpResponse};
 
 #[get("")]
 pub async fn index(params: web::Query<QueryParams>) -> Result<HttpResponse, YearlyEndpointError> {
@@ -25,7 +25,5 @@ pub async fn index(params: web::Query<QueryParams>) -> Result<HttpResponse, Year
             .collect();
     }
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .body(serde_json::to_string(&daily_cases.to_yearly().0).unwrap()))
+    Ok(HttpResponse::Ok().json(daily_cases.to_yearly().0))
 }
