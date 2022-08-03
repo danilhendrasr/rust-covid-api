@@ -1,14 +1,17 @@
 use actix_web::{test, web, App};
-use rust_covid_api::routes;
+use rust_covid_api::{routes::yearly, types::YearlyItem};
 
 #[cfg(test)]
 mod all_years {
     use super::*;
+    use chrono::Datelike;
 
     #[actix_web::test]
-    async fn returns_200() {
+    async fn returns_all_years() {
+        let current_year = chrono::Utc::now().year();
+        let earliest_year = 2020;
         let app = test::init_service(
-            App::new().service(web::scope("/yearly").service(routes::yearly::index_handler)),
+            App::new().service(web::scope("/yearly").service(yearly::index_handler)),
         )
         .await;
 
@@ -16,6 +19,15 @@ mod all_years {
         let resp = test::call_service(&app, req).await;
 
         assert_eq!(resp.status().as_u16(), 200);
+        assert_eq!(
+            resp.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let body: Vec<YearlyItem> = test::read_body_json(resp).await;
+        assert!(!body.is_empty());
+        assert_eq!(body[0].year, earliest_year);
+        assert_eq!(body.last().unwrap().year, current_year);
     }
 }
 
@@ -24,26 +36,39 @@ mod specific_year {
     use super::*;
 
     #[actix_web::test]
-    async fn returns_200_given_valid_year() {
+    async fn returns_correct_response_given_valid_year() {
         let app = test::init_service(
-            App::new().service(web::scope("/yearly").service(routes::yearly::specific_year)),
+            App::new().service(web::scope("/yearly").service(yearly::specific_year)),
         )
         .await;
 
-        let req = test::TestRequest::with_uri("/yearly/2020").to_request();
+        let chosen_year = 2020;
+        let req = test::TestRequest::get()
+            .uri(&format!("/yearly/{}", chosen_year))
+            .to_request();
         let resp = test::call_service(&app, req).await;
 
         assert_eq!(resp.status().as_u16(), 200);
+        assert_eq!(
+            resp.headers().get("Content-Type").unwrap(),
+            "application/json"
+        );
+
+        let body: YearlyItem = test::read_body_json(resp).await;
+        assert_eq!(body.year, chosen_year);
     }
 
     #[actix_web::test]
     async fn returns_404_given_invalid_year() {
         let app = test::init_service(
-            App::new().service(web::scope("/yearly").service(routes::yearly::specific_year)),
+            App::new().service(web::scope("/yearly").service(yearly::specific_year)),
         )
         .await;
 
-        let req = test::TestRequest::with_uri("/yearly/2018").to_request();
+        let chosen_year = 2018;
+        let req = test::TestRequest::get()
+            .uri(&format!("/yearly/{}", chosen_year))
+            .to_request();
         let resp = test::call_service(&app, req).await;
 
         assert_eq!(resp.status().as_u16(), 404);

@@ -244,7 +244,7 @@ pub struct MonthlyItem {
     pub active: i32,
 }
 
-#[derive(serde::Serialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct YearlyItem {
     pub year: i32,
     pub positive: i32,
