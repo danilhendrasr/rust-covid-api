@@ -86,12 +86,6 @@ jobs:
         run: |
           heroku git:remote -a ${{ secrets.HEROKU_APP }}
 
-      - name: Set buildpack
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          heroku buildpacks:set emk/rust
-
       - name: Push to Heroku
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
