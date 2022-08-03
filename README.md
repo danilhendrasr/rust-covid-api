@@ -62,10 +62,6 @@ thus in my opinion Rust is the ideal choice for this one.
 ### No caching? 😕
 Not at the moment.
 
-### Tests?
-There are some tests in place already but it's incomplete, 
-I'm planning to complete it soon, see roadmap. 
-
 ### API Contract 📗
 See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/API-Contract).
 
@@ -107,6 +103,18 @@ cargo build --release
 cargo run --release
 ```
 
+### Running Tests
+Run the following command
+```bash
+cargo test
+```
+> Notes: some tests might fail when being run in a certain situation.
+> For example:
+> The test for yearly endpoinds might fail if it's being run on the first day
+> of a new year because the code uses the current date and time to determine
+> the latest date and time, while the source API might haven't updated its data.
+> Thus causing the test to fail.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- ROADMAP -->
@@ -114,8 +122,8 @@ cargo run --release
 
 - [x] Complete the refactoring
 - [x] Create automated deployment pipeline
-- [ ] Add more tests
-- [ ] Add caching mechanism
+- [x] Add just enough tests
+- [ ] Implement caching mechanism
 
 See the [open issues][issues-url] for a full list of proposed features (and known issues).
 
