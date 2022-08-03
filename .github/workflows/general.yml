@@ -61,10 +61,9 @@ jobs:
         with:
           command: test
 
-  # TODO: Make deployment depends on testing when the testing
-  # is actually functioning.
   deploy-heroku:
     name: Deploy to Heroku
+    needs: test
     runs-on: ubuntu-20.04
     steps:
       - name: Fetch entire repo git history
