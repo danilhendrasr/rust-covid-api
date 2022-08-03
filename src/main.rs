@@ -15,6 +15,7 @@ async fn main() -> Result<(), std::io::Error> {
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(routes::index::index_handler))
+            .route("/health", web::get().to(routes::health::service_health))
             .service(
                 web::scope("/yearly")
                     .service(routes::yearly::index_handler)
