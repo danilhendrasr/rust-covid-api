@@ -36,7 +36,7 @@ mod specific_year {
     use super::*;
 
     #[actix_web::test]
-    async fn returns_correct_response_given_valid_year() {
+    async fn returns_correct_data_given_valid_year() {
         let app = test::init_service(
             App::new().service(web::scope("/yearly").service(yearly::specific_year)),
         )

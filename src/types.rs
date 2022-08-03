@@ -234,7 +234,7 @@ pub struct DailyItem {
     pub active: i32,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct MonthlyItem {
     pub year: i32,
     pub month: u32,
