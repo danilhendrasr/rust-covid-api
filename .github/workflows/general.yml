@@ -61,14 +61,16 @@ jobs:
           command: test
 
   deploy-heroku:
-    name: Deploy to Heroku
+    name: Heroku Deploy
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
 
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          buildpack: "https://github.com/emk/heroku-buildpack-rust.git"
+      - name: Deploy to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku login
+          heroku git:remote -a ${{ secrets.HEROKU_APP }}
+          heroku buildpacks:set emk/rust
+          git push heroku main
