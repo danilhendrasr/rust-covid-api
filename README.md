@@ -62,49 +62,37 @@ thus in my opinion Rust is the ideal choice for this one.
 ### No caching? 😕
 Not at the moment.
 
-### API Contract 📗
-See [the wiki](https://github.com/danilhendrasr/rust-covid-api/wiki/API-Contract).
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
 ## Getting Started
-### Using Docker
-The docker image is available to pull from in the following url: [https://hub.docker.com/r/danilhendrasr/rust-covid-api](https://hub.docker.com/r/danilhendrasr/rust-covid-api).
-#### Steps
-```bash
-# Pull the image from docker hub
-docker pull danilhendrasr/rust-covid-api
+### Running the API
+#### Using Docker
+1. Pull the image from GitHub Container Registry:
+   ```bash
+   docker pull ghcr.io/danilhendrasr/rust-covid-api:latest
+   ```
+2. Run the container:
+   ```bash
+   docker run -d --name rust-covid-api -p 8082:8082 danilhendrasr/rust-covid-api
+   ```
+3. Access the API via [localhost:8082](http://localhost:8082).
 
-# Run the container, will be accessible through localhost:8081
-docker run -d --name rust-covid-api -p 8081:8081 danilhendrasr/rust-covid-api
-```
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-### Build from source
-#### Prerequisites
+#### Building From Source
+##### Prerequisites
 - Rust 1.57 (used to write this program)
 - pkg-config (for linux system)
 - libssl-dev (for linux system)
 
-#### Steps
-```bash
-# clone the repo
-git clone https://github.com/danilhendrasr/nodeflux-technical-assessment rust-covid-api
-
-# change the current directory
-cd rust-covid-api
-
-# build program and dependencies
-cargo build --release
-
-# run the program, the app will be accessible through localhost:8081
-cargo run --release
-```
+##### Steps
+1. Run the following command:
+   ```bash
+   cargo run --release
+   ```
+2. Access the API via [localhost:8082](http://localhost:8082).
 
 ### Running Tests
-Run the following command
+Run the following command:
 ```bash
 cargo test
 ```
@@ -115,6 +103,9 @@ cargo test
 > of a new year because the code uses the current date and time to determine
 > the latest date and time, while the source API might haven't updated its data.
 > This should be fixed once the caching mechanism is in place though.
+
+### API Documentation
+Go to [localhost:8082/docs/](http://localhost:8082/docs/) for documentation.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
