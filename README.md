@@ -114,6 +114,7 @@ cargo test
 > For example, the test for yearly endpoints might fail if it's being run on the first day
 > of a new year because the code uses the current date and time to determine
 > the latest date and time, while the source API might haven't updated its data.
+> This should be fixed once the caching mechanism is in place though.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -123,6 +124,7 @@ cargo test
 - [x] Complete the refactoring
 - [x] Create automated deployment pipeline
 - [x] Add just enough tests
+- [x] Add API docs using Swagger UI
 - [ ] Implement caching mechanism
 
 See the [open issues][issues-url] for a full list of proposed features (and known issues).
