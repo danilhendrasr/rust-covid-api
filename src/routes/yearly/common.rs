@@ -32,9 +32,15 @@ pub mod errors {
 }
 
 pub mod types {
-    #[derive(serde::Deserialize)]
+    use utoipa::IntoParams;
+
+    #[derive(serde::Deserialize, Debug, IntoParams)]
     pub struct QueryParams {
+        /// The bottom boundary of the yearly cases.
+        #[param(example = 2020)]
         pub since: Option<i32>,
+        /// The upper boundary of the yearly cases.
+        #[param(example = 2021)]
         pub upto: Option<i32>,
     }
 }

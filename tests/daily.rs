@@ -1,5 +1,5 @@
 use actix_web::{test, web, App};
-use rust_covid_api::{routes::daily, types::DailyItem};
+use rust_covid_api::{routes::daily, types::DailyCase};
 
 mod all_days {
     use actix_web_lab::middleware::from_fn;
@@ -12,7 +12,6 @@ mod all_days {
         let current_time = chrono::Utc::now();
         let current_year = current_time.year();
         let current_month = current_time.month();
-        let current_day = current_time.day();
 
         let earliest_year = 2020;
         let earliest_month = 3;
@@ -22,7 +21,7 @@ mod all_days {
             App::new().service(
                 web::scope("/daily")
                     .wrap(from_fn(daily::middleware::filter_malformed_query_params))
-                    .service(daily::index_handler),
+                    .service(daily::all_days),
             ),
         )
         .await;
@@ -36,7 +35,7 @@ mod all_days {
             "application/json"
         );
 
-        let body: Vec<DailyItem> = test::read_body_json(resp).await;
+        let body: Vec<DailyCase> = test::read_body_json(resp).await;
         assert!(!body.is_empty());
         assert_eq!(body[0].year, earliest_year);
         assert_eq!(body[0].month, earliest_month);
@@ -45,12 +44,8 @@ mod all_days {
         let last_item = body.last().unwrap();
         assert_eq!(last_item.year, current_year);
         assert_eq!(last_item.month, current_month);
-
-        // There's a chance the last item in the response is yesterday's daily case
-        // because the API hasn't updated its data.
-        if current_day - last_item.day >= 2 {
-            panic!();
-        }
+        // We don't assert the day of the last item in response body because
+        // there's a chance the API hasn't updated its data to the current day.
     }
 }
 
@@ -64,7 +59,7 @@ mod all_days_in_a_year {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(daily::middleware::filter_malformed_query_params))
-                .service(web::scope("/daily").service(daily::specific_year)),
+                .service(web::scope("/daily").service(daily::all_days_in_a_year)),
         )
         .await;
 
@@ -80,7 +75,7 @@ mod all_days_in_a_year {
             "application/json"
         );
 
-        let body: Vec<DailyItem> = test::read_body_json(resp).await;
+        let body: Vec<DailyCase> = test::read_body_json(resp).await;
         assert_eq!(body[0].year, chosen_year);
         assert_eq!(body.last().unwrap().year, chosen_year);
     }
@@ -90,7 +85,7 @@ mod all_days_in_a_year {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(daily::middleware::filter_malformed_query_params))
-                .service(web::scope("/daily").service(daily::specific_year)),
+                .service(web::scope("/daily").service(daily::all_days_in_a_year)),
         )
         .await;
 
@@ -111,7 +106,7 @@ mod all_days_in_a_month {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(daily::middleware::filter_malformed_query_params))
-                .service(web::scope("/daily").service(daily::specific_month)),
+                .service(web::scope("/daily").service(daily::all_days_in_a_month)),
         )
         .await;
 
@@ -128,7 +123,7 @@ mod all_days_in_a_month {
             "application/json"
         );
 
-        let body: Vec<DailyItem> = test::read_body_json(resp).await;
+        let body: Vec<DailyCase> = test::read_body_json(resp).await;
         assert_eq!(body.len(), 31);
         assert_eq!(body[0].year, chosen_year);
         assert_eq!(body[0].month, chosen_month);
@@ -143,7 +138,7 @@ mod all_days_in_a_month {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(daily::middleware::filter_malformed_query_params))
-                .service(web::scope("/daily").service(daily::specific_month)),
+                .service(web::scope("/daily").service(daily::all_days_in_a_month)),
         )
         .await;
 
@@ -182,7 +177,7 @@ mod specific_day {
             "application/json"
         );
 
-        let body: DailyItem = test::read_body_json(resp).await;
+        let body: DailyCase = test::read_body_json(resp).await;
         assert_eq!(body.year, chosen_year);
         assert_eq!(body.month, chosen_month);
         assert_eq!(body.day, chosen_day);

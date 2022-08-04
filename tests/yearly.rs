@@ -1,5 +1,5 @@
 use actix_web::{test, web, App};
-use rust_covid_api::{routes::yearly, types::YearlyItem};
+use rust_covid_api::{routes::yearly, types::YearlyCase};
 
 #[cfg(test)]
 mod all_years {
@@ -11,7 +11,7 @@ mod all_years {
         let current_year = chrono::Utc::now().year();
         let earliest_year = 2020;
         let app = test::init_service(
-            App::new().service(web::scope("/yearly").service(yearly::index_handler)),
+            App::new().service(web::scope("/yearly").service(yearly::all_years)),
         )
         .await;
 
@@ -24,7 +24,7 @@ mod all_years {
             "application/json"
         );
 
-        let body: Vec<YearlyItem> = test::read_body_json(resp).await;
+        let body: Vec<YearlyCase> = test::read_body_json(resp).await;
         assert!(!body.is_empty());
         assert_eq!(body[0].year, earliest_year);
         assert_eq!(body.last().unwrap().year, current_year);
@@ -54,7 +54,7 @@ mod specific_year {
             "application/json"
         );
 
-        let body: YearlyItem = test::read_body_json(resp).await;
+        let body: YearlyCase = test::read_body_json(resp).await;
         assert_eq!(body.year, chosen_year);
     }
 

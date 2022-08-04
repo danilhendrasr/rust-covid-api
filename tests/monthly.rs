@@ -1,5 +1,5 @@
 use actix_web::{test, web, App};
-use rust_covid_api::{routes::monthly, types::MonthlyItem};
+use rust_covid_api::{routes::monthly, types::MonthlyCase};
 
 mod all_months {
     use actix_web_lab::middleware::from_fn;
@@ -19,7 +19,7 @@ mod all_months {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(monthly::middleware::filter_malformed_query_params))
-                .service(web::scope("/monthly").service(monthly::index_handler)),
+                .service(web::scope("/monthly").service(monthly::all_months)),
         )
         .await;
 
@@ -32,7 +32,7 @@ mod all_months {
             "application/json"
         );
 
-        let body: Vec<MonthlyItem> = test::read_body_json(resp).await;
+        let body: Vec<MonthlyCase> = test::read_body_json(resp).await;
         assert!(!body.is_empty());
         assert_eq!(body[0].year, earliest_year);
         assert_eq!(body[0].month, earliest_month);
@@ -53,7 +53,7 @@ mod all_months_in_a_year {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(monthly::middleware::filter_malformed_query_params))
-                .service(web::scope("/monthly").service(monthly::specific_year)),
+                .service(web::scope("/monthly").service(monthly::all_months_in_a_year)),
         )
         .await;
 
@@ -69,7 +69,7 @@ mod all_months_in_a_year {
             "application/json"
         );
 
-        let body: Vec<MonthlyItem> = test::read_body_json(resp).await;
+        let body: Vec<MonthlyCase> = test::read_body_json(resp).await;
         assert!(body.len() == 12);
         assert_eq!(body[0].year, chosen_year);
         assert_eq!(body.last().unwrap().year, chosen_year);
@@ -80,7 +80,7 @@ mod all_months_in_a_year {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(monthly::middleware::filter_malformed_query_params))
-                .service(web::scope("/monthly").service(monthly::specific_year)),
+                .service(web::scope("/monthly").service(monthly::all_months_in_a_year)),
         )
         .await;
 
@@ -118,7 +118,7 @@ mod specific_month {
             "application/json"
         );
 
-        let body: MonthlyItem = test::read_body_json(resp).await;
+        let body: MonthlyCase = test::read_body_json(resp).await;
         assert_eq!(body.year, chosen_year);
         assert_eq!(body.month, chosen_month);
     }
@@ -128,7 +128,7 @@ mod specific_month {
         let app = test::init_service(
             App::new()
                 .wrap(from_fn(monthly::middleware::filter_malformed_query_params))
-                .service(web::scope("/monthly").service(monthly::specific_year)),
+                .service(web::scope("/monthly").service(monthly::all_months_in_a_year)),
         )
         .await;
 

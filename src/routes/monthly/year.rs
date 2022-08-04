@@ -1,15 +1,45 @@
 use super::types::{MonthlyEndpointError, MonthlyQueryParams};
-use crate::{types::YearPath, utils::fetch_data_from_source_api};
+use crate::utils::fetch_data_from_source_api;
 
 use actix_web::{get, web, HttpResponse};
 use chrono::NaiveDate;
 use chrono_utilities::naive::DateTransitions;
 
+/// Get all monthly cases in a year.
+#[utoipa::path(
+    context_path = "/monthly",
+    tag = "Data",
+    params(
+        (
+            "year",
+            description = "Selected year.",
+            example = 2021
+        ),
+        (
+            "since" = Option<String>,
+            query,
+            description = "In ISO 8601 format but take the year and month only (YYYY-MM).",
+            example = "2021-03"
+        ),
+        (
+            "upto" = Option<String>,
+            query,
+            description = "In ISO 8601 format but take the year and month only (YYYY-MM).",
+            example = "2022-07"
+        )
+    ),
+    responses(
+        (status = 200, description = "Success getting the data.", body = [MonthlyCase]),
+        (status = 404, description = "There are no case yet for the given year", body = String),
+        (status = 500, description = "Something went wrong during the processing.", body = String),
+    )
+)]
 #[get("/{year}")]
-pub async fn specific_year(
+pub async fn all_months_in_a_year(
     params: web::ReqData<MonthlyQueryParams>,
-    path: web::Path<YearPath>,
+    path: web::Path<i32>,
 ) -> Result<HttpResponse, MonthlyEndpointError> {
+    let selected_year = path.into_inner();
     let params = params.into_inner();
     let mut daily_cases = fetch_data_from_source_api()
         .await
@@ -56,7 +86,7 @@ pub async fn specific_year(
 
     Ok(HttpResponse::Ok().json(
         daily_cases
-            .get_all_months_in_a_year(path.year)
+            .get_all_months_in_a_year(selected_year)
             .map_err(MonthlyEndpointError::NotFound)?
             .0,
     ))

@@ -1,9 +1,21 @@
 use super::{common::types::QueryParams, errors::YearlyEndpointError};
 use crate::utils::fetch_data_from_source_api;
 use actix_web::{get, web, HttpResponse};
+use utoipa::IntoParams;
 
+/// Get all yearly cases.
+#[utoipa::path(
+    context_path = "/yearly",
+    tag = "Data",
+    responses(
+        (status = 200, description = "Success getting the data.", body = [YearlyCase]),
+        (status = 500, description = "Something went wrong during the processing.", body = String),
+    )
+)]
 #[get("")]
-pub async fn index(params: web::Query<QueryParams>) -> Result<HttpResponse, YearlyEndpointError> {
+pub async fn all_years(
+    params: web::Query<QueryParams>,
+) -> Result<HttpResponse, YearlyEndpointError> {
     let mut daily_cases = fetch_data_from_source_api()
         .await
         .map_err(YearlyEndpointError::UnexpectedError)?

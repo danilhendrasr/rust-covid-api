@@ -5,8 +5,31 @@ use actix_web::{get, web, HttpResponse};
 use chrono::NaiveDate;
 use chrono_utilities::naive::DateTransitions;
 
+/// Get all monthly cases.
+#[utoipa::path(
+    context_path = "/monthly",
+    tag = "Data",
+    params(
+        (
+            "since" = Option<String>,
+            query,
+            description = "In ISO 8601 format but take the year and month only (YYYY-MM).",
+            example = "2021-03"
+        ),
+        (
+            "upto" = Option<String>,
+            query,
+            description = "In ISO 8601 format but take the year and month only (YYYY-MM).",
+            example = "2022-07"
+        )
+    ),
+    responses(
+        (status = 200, description = "Success getting the data.", body = [MonthlyCase]),
+        (status = 500, description = "Something went wrong during the processing.", body = String),
+    )
+)]
 #[get("")]
-pub async fn index(
+pub async fn all_months(
     params: web::ReqData<MonthlyQueryParams>,
 ) -> Result<HttpResponse, MonthlyEndpointError> {
     let params = params.into_inner();

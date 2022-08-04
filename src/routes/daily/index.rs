@@ -4,8 +4,31 @@ use crate::utils::fetch_data_from_source_api;
 use actix_web::{get, web, HttpResponse};
 use chrono::NaiveDate;
 
+/// Get all daily cases.
+#[utoipa::path(
+    context_path = "/daily",
+    tag = "Data",
+    params(
+        (
+            "since" = Option<String>,
+            query,
+            description = "In ISO 8601 format (YYYY-MM-DD).",
+            example = "2021-03-03"
+        ),
+        (
+            "upto" = Option<String>,
+            query,
+            description = "In ISO 8601 format (YYYY-MM-DD).",
+            example = "2021-04-01"
+        )
+    ),
+    responses(
+        (status = 200, description = "Success getting the data.", body = [DailyCase]),
+        (status = 500, description = "Something went wrong during the processing.", body = String),
+    )
+)]
 #[get("")]
-pub async fn index(
+pub async fn all_days(
     params: web::ReqData<DailyQueryParams>,
 ) -> Result<HttpResponse, DailyEndpointError> {
     let params = params.into_inner();
