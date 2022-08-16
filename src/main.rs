@@ -2,12 +2,14 @@ use std::io::ErrorKind;
 
 use actix_web::{web, App, HttpServer};
 use actix_web_lab::middleware::from_fn;
-use rust_covid_api::{
-    api_doc::ApiDoc,
-    routes::{self, daily, monthly},
-};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
+
+use rust_covid_api::{
+    api_doc::ApiDoc,
+    middleware,
+    routes::{self, daily, monthly},
+};
 
 #[actix_web::main]
 async fn main() -> Result<(), impl std::error::Error> {
@@ -19,8 +21,13 @@ async fn main() -> Result<(), impl std::error::Error> {
 
     let openapi = ApiDoc::openapi();
 
+    let redis_client =
+        redis::Client::open("redis://127.0.0.1/").expect("Failed connecting to Redis.");
+
     HttpServer::new(move || {
         App::new()
+            .app_data(redis_client.clone())
+            .wrap(middleware::CacheResponse)
             .route("/", web::get().to(routes::index::daily_cases_summary))
             .route("/health", web::get().to(routes::health::service_health))
             .service(

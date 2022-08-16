@@ -59,7 +59,7 @@ pub async fn daily_cases_summary() -> Result<HttpResponse, SlashEndpointError> {
         .await
         .map_err(SlashEndpointError::UnexpectedError)?;
 
-    Ok(HttpResponse::Ok().json(CasesSummary {
+    let resp = CasesSummary {
         total_positive: resp.update.total.jumlah_positif,
         total_recovered: resp.update.total.jumlah_sembuh,
         total_deaths: resp.update.total.jumlah_meninggal,
@@ -68,5 +68,7 @@ pub async fn daily_cases_summary() -> Result<HttpResponse, SlashEndpointError> {
         new_recovered: resp.update.penambahan.jumlah_sembuh,
         new_deaths: resp.update.penambahan.jumlah_meninggal,
         new_active: resp.update.penambahan.jumlah_dirawat,
-    }))
+    };
+
+    Ok(HttpResponse::Ok().json(resp))
 }
