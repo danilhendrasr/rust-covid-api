@@ -60,39 +60,3 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-
-  deploy-heroku:
-    name: Deploy to Heroku
-    needs: test
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Fetch entire repo git history
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Heroku login credentials
-        run: |
-          cat > ~/.netrc <<EOF
-            machine api.heroku.com
-              login $HEROKU_EMAIL
-              password $HEROKU_API_KEY
-            machine git.heroku.com
-              login $HEROKU_EMAIL
-              password $HEROKU_API_KEY
-          EOF
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
-
-      - name: Add Heroku remote
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          heroku git:remote -a ${{ secrets.HEROKU_APP }}
-
-      - name: Push to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          git push heroku main
