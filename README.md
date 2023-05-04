@@ -1,5 +1,7 @@
 <div id="top"></div>
 
+> #### :warning: The source API seems to be dead already, so this project is basically unrunnable now.
+
 ---
 
 <p align="center">
